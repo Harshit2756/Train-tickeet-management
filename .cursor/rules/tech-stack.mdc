@@ -7,3 +7,4 @@ alwaysApply: true
 
 - Only use HTML, CSS, Bootstrap, and JavaScript.
 - Follow standard practices for each technology.
+- make a sperate file for css html and javascript and link them

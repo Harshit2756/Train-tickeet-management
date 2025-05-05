@@ -1,513 +1,747 @@
 // Admin Dashboard JavaScript for Indian Railways Ticket Management System
 
 document.addEventListener('DOMContentLoaded', function () {
-    // Check if user is logged in and is admin
-    const currentUser = auth.getCurrentUser();
-    if (!currentUser || currentUser.role !== 'admin') {
-        window.location.href = '../../pages/auth/login.html';
-        return;
-    }
+    // Check if admin is logged in
+    checkAdminAuth();
 
-    // Update admin name in UI
-    updateAdminInfo(currentUser);
+    // Initialize dashboard
+    initializeDashboard();
 
-    // Initialize dashboard stats
-    initializeDashboardStats();
-
-    // Generate charts
-    generateRevenueChart();
-    generateTicketTypeChart();
-    generateUserRegistrationChart();
-
-    // Initialize tables
-    initializeUserTable();
-    initializeTrainTable();
-    initializeRecentBookingsTable();
-
-    // Setup event listeners for dynamically loaded content
+    // Setup event listeners
     setupEventListeners();
 
-    // Show success message if redirected from train management
+    // Show success message if redirected
     const successMessage = getQueryParam('success');
     if (successMessage) {
         showAlert(decodeURIComponent(successMessage), 'success');
     }
 });
 
-// Update admin information in the UI
-function updateAdminInfo(adminUser) {
-    // Update welcome message
-    const welcomeMessage = document.getElementById('welcomeMessage');
-    if (welcomeMessage) {
-        welcomeMessage.textContent = `Welcome, ${adminUser.name || adminUser.username}`;
-    }
+// Check admin authentication
+function checkAdminAuth() {
+    // In a real app, this would verify the admin session
+    // For this demo, we'll just simulate an admin user
+    const adminUser = {
+        id: 'admin-001',
+        name: 'Jainam',
+        email: 'jainam@indianrail.gov.in',
+        role: 'admin'
+    };
 
-    // Update admin name in dropdown
-    const adminName = document.getElementById('adminName');
-    if (adminName) {
-        adminName.textContent = adminUser.name || adminUser.username;
-    }
-
-    // Update last login time
-    const lastLogin = document.getElementById('lastLogin');
-    if (lastLogin) {
-        lastLogin.textContent = `Last login: ${formatDate(new Date())}`;
+    // Update admin name display
+    const adminNameDisplay = document.getElementById('adminNameDisplay');
+    if (adminNameDisplay) {
+        adminNameDisplay.textContent = adminUser.name;
     }
 }
 
-// Initialize dashboard statistics
-function initializeDashboardStats() {
-    // Get data from storage
-    const bookings = storage.get('bookings') || [];
-    const users = storage.get('users') || [];
-    const trains = storage.get('trains') || [];
+// Initialize dashboard data
+function initializeDashboard() {
+    // Load data from storage
+    const users = localStorageUtil.get('users') || getMockUsers();
+    const trains = localStorageUtil.get('trains') || getMockTrains();
+    const bookings = localStorageUtil.get('bookings') || getMockBookings();
 
-    // Calculate stats
+    // Initialize stats
+    updateStats(users, trains, bookings);
+
+    // Initialize tables
+    populateTicketsPerClassTable(bookings);
+    populateSalesPerQuarterTable(bookings);
+    populateCustomersTable(users, bookings);
+    populateTrainsTable(trains);
+
+    // Initialize tooltips
+    initializeTooltips();
+
+    // Reinitialize event listeners for new elements
+    setupActionButtons();
+}
+
+// Update dashboard statistics
+function updateStats(users, trains, bookings) {
+    // Update total users
+    const totalUsers = document.getElementById('totalUsers');
+    if (totalUsers) totalUsers.textContent = users.length;
+
+    // Update total bookings
+    const totalBookings = document.getElementById('totalBookings');
+    if (totalBookings) totalBookings.textContent = bookings.length;
+
+    // Update total trains
+    const totalTrains = document.getElementById('totalTrains');
+    if (totalTrains) totalTrains.textContent = trains.length;
+
+    // Calculate and update total revenue
     const totalRevenue = calculateTotalRevenue(bookings);
-    const totalUsers = users.length;
-    const totalTrains = trains.length;
-    const totalBookings = bookings.length;
-
-    // Update UI with stats
-    document.getElementById('totalRevenue').textContent = formatCurrency(totalRevenue);
-    document.getElementById('totalUsers').textContent = totalUsers;
-    document.getElementById('totalTrains').textContent = totalTrains;
-    document.getElementById('totalBookings').textContent = totalBookings;
-
-    // Calculate conversion rate
-    const unfulfilledBookings = bookings.filter(booking => booking.status === 'cancelled').length;
-    const conversionRate = totalBookings > 0
-        ? ((totalBookings - unfulfilledBookings) / totalBookings * 100).toFixed(1)
-        : 0;
-
-    document.getElementById('conversionRate').textContent = `${conversionRate}%`;
+    const totalRevenueElement = document.getElementById('totalRevenue');
+    if (totalRevenueElement) totalRevenueElement.textContent = '₹' + totalRevenue.toLocaleString();
 }
 
-// Generate revenue chart
-function generateRevenueChart() {
-    const ctx = document.getElementById('revenueChart').getContext('2d');
+// Calculate total revenue
+function calculateTotalRevenue(bookings) {
+    return bookings.reduce((total, booking) => {
+        // Only count confirmed bookings
+        if (booking.status !== 'cancelled') {
+            return total + booking.fare;
+        }
+        return total;
+    }, 0);
+}
 
-    // Get last 6 months
-    const months = [];
-    const currentDate = new Date();
+// Populate tickets per class table
+function populateTicketsPerClassTable(bookings) {
+    const ticketsPerClassTable = document.getElementById('ticketsPerClassTable');
+    if (!ticketsPerClassTable) return;
 
-    for (let i = 5; i >= 0; i--) {
-        const month = new Date(currentDate.getFullYear(), currentDate.getMonth() - i, 1);
-        months.push(month.toLocaleDateString('en-US', { month: 'short' }));
-    }
+    // Calculate tickets per class
+    const classStats = {
+        'First Class': { count: 0, percentage: 0 },
+        'AC Tier 1': { count: 0, percentage: 0 },
+        'AC Tier 2': { count: 0, percentage: 0 },
+        'AC Tier 3': { count: 0, percentage: 0 },
+        'Sleeper': { count: 0, percentage: 0 },
+        'General': { count: 0, percentage: 0 }
+    };
 
-    // Simulate revenue data (in a real app, this would come from the backend)
-    const revenueData = [4800, 5200, 6000, 4900, 6500, 7200];
-
-    new Chart(ctx, {
-        type: 'line',
-        data: {
-            labels: months,
-            datasets: [{
-                label: 'Revenue (₹)',
-                data: revenueData,
-                borderColor: 'rgba(0, 86, 179, 1)',
-                backgroundColor: 'rgba(0, 86, 179, 0.1)',
-                tension: 0.4,
-                fill: true,
-                pointBackgroundColor: 'rgba(0, 86, 179, 1)',
-                pointRadius: 4
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-                legend: {
-                    display: false
-                },
-                tooltip: {
-                    callbacks: {
-                        label: function (context) {
-                            return `Revenue: ${formatCurrency(context.raw)}`;
-                        }
-                    }
-                }
-            },
-            scales: {
-                y: {
-                    beginAtZero: true,
-                    ticks: {
-                        callback: function (value) {
-                            return '₹' + value;
-                        }
-                    }
-                }
+    // Count bookings by class
+    bookings.forEach(booking => {
+        if (booking.status !== 'cancelled') {
+            if (classStats[booking.class]) {
+                classStats[booking.class].count += booking.passengers || 1;
             }
         }
     });
-}
 
-// Generate ticket type chart
-function generateTicketTypeChart() {
-    const ctx = document.getElementById('ticketTypeChart').getContext('2d');
+    // Calculate total tickets
+    const totalTickets = Object.values(classStats).reduce((total, stat) => total + stat.count, 0);
 
-    // Simulate ticket type data (in a real app, this would come from the backend)
-    const ticketTypes = ['Economy', 'Standard', 'Business', 'First Class'];
-    const ticketData = [452, 256, 128, 64];
+    // Calculate percentages
+    if (totalTickets > 0) {
+        Object.keys(classStats).forEach(className => {
+            classStats[className].percentage = ((classStats[className].count / totalTickets) * 100).toFixed(0);
+        });
+    }
 
-    new Chart(ctx, {
-        type: 'doughnut',
-        data: {
-            labels: ticketTypes,
-            datasets: [{
-                data: ticketData,
-                backgroundColor: [
-                    'rgba(0, 86, 179, 0.8)',
-                    'rgba(0, 68, 148, 0.8)',
-                    'rgba(255, 107, 0, 0.8)',
-                    'rgba(40, 167, 69, 0.8)'
-                ],
-                borderWidth: 1
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-                legend: {
-                    position: 'bottom'
-                },
-                tooltip: {
-                    callbacks: {
-                        label: function (context) {
-                            const label = context.label || '';
-                            const value = context.raw;
-                            const total = context.dataset.data.reduce((a, b) => a + b, 0);
-                            const percentage = Math.round((value / total) * 100);
-                            return `${label}: ${value} tickets (${percentage}%)`;
-                        }
-                    }
-                }
-            }
-        }
+    // Update table with real data
+    ticketsPerClassTable.innerHTML = '';
+
+    Object.keys(classStats).forEach(className => {
+        const row = document.createElement('tr');
+        row.innerHTML = `
+            <td>${className}</td>
+            <td>${classStats[className].count}</td>
+            <td>${classStats[className].percentage}%</td>
+        `;
+        ticketsPerClassTable.appendChild(row);
     });
 }
 
-// Generate user registration chart
-function generateUserRegistrationChart() {
-    const ctx = document.getElementById('userRegistrationChart').getContext('2d');
+// Populate sales per quarter table
+function populateSalesPerQuarterTable(bookings) {
+    const salesPerQuarterTable = document.getElementById('salesPerQuarterTable');
+    if (!salesPerQuarterTable) return;
 
-    // Get last 7 days
-    const days = [];
-    const currentDate = new Date();
+    // Calculate sales per quarter
+    const quarterStats = {
+        'Q1 (Jan-Mar)': { sales: 0, percentage: 0 },
+        'Q2 (Apr-Jun)': { sales: 0, percentage: 0 },
+        'Q3 (Jul-Sep)': { sales: 0, percentage: 0 },
+        'Q4 (Oct-Dec)': { sales: 0, percentage: 0 }
+    };
 
-    for (let i = 6; i >= 0; i--) {
-        const day = new Date(currentDate.getFullYear(), currentDate.getMonth(), currentDate.getDate() - i);
-        days.push(day.toLocaleDateString('en-US', { weekday: 'short' }));
-    }
+    // Count sales by quarter
+    bookings.forEach(booking => {
+        if (booking.status !== 'cancelled') {
+            const bookingDate = new Date(booking.bookingDate);
+            const month = bookingDate.getMonth();
 
-    // Simulate user registration data (in a real app, this would come from the backend)
-    const registrationData = [8, 12, 5, 7, 10, 15, 9];
-
-    new Chart(ctx, {
-        type: 'bar',
-        data: {
-            labels: days,
-            datasets: [{
-                label: 'New Users',
-                data: registrationData,
-                backgroundColor: 'rgba(255, 107, 0, 0.7)',
-                borderColor: 'rgba(255, 107, 0, 1)',
-                borderWidth: 1
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-                legend: {
-                    display: false
-                }
-            },
-            scales: {
-                y: {
-                    beginAtZero: true,
-                    ticks: {
-                        precision: 0
-                    }
-                }
+            if (month >= 0 && month <= 2) {
+                quarterStats['Q1 (Jan-Mar)'].sales += booking.fare;
+            } else if (month >= 3 && month <= 5) {
+                quarterStats['Q2 (Apr-Jun)'].sales += booking.fare;
+            } else if (month >= 6 && month <= 8) {
+                quarterStats['Q3 (Jul-Sep)'].sales += booking.fare;
+            } else {
+                quarterStats['Q4 (Oct-Dec)'].sales += booking.fare;
             }
         }
     });
-}
 
-// Initialize user table
-function initializeUserTable() {
-    const users = storage.get('users') || [];
-    const userTableBody = document.getElementById('userTableBody');
+    // Calculate total sales
+    const totalSales = Object.values(quarterStats).reduce((total, stat) => total + stat.sales, 0);
 
-    if (userTableBody) {
-        userTableBody.innerHTML = '';
-
-        if (users.length === 0) {
-            userTableBody.innerHTML = `
-                <tr>
-                    <td colspan="6" class="text-center">No users found</td>
-                </tr>
-            `;
-            return;
-        }
-
-        // Take only latest 5 users and sort by registration date
-        const latestUsers = users
-            .sort((a, b) => new Date(b.registrationDate) - new Date(a.registrationDate))
-            .slice(0, 5);
-
-        latestUsers.forEach(user => {
-            const row = document.createElement('tr');
-            row.innerHTML = `
-                <td>${user.id}</td>
-                <td>${user.username}</td>
-                <td>${user.email}</td>
-                <td>${user.mobileNumber}</td>
-                <td>${formatDate(user.registrationDate)}</td>
-                <td>
-                    <button class="btn btn-action btn-edit me-1" data-bs-toggle="tooltip" title="Edit User">
-                        <i class="bi bi-pencil"></i>
-                    </button>
-                    <button class="btn btn-action btn-delete" data-bs-toggle="tooltip" title="Delete User" data-user-id="${user.id}">
-                        <i class="bi bi-trash"></i>
-                    </button>
-                </td>
-            `;
-            userTableBody.appendChild(row);
+    // Calculate percentages
+    if (totalSales > 0) {
+        Object.keys(quarterStats).forEach(quarter => {
+            quarterStats[quarter].percentage = ((quarterStats[quarter].sales / totalSales) * 100).toFixed(0);
         });
-
-        // Initialize tooltips
-        initializeTooltips();
     }
+
+    // Update table with real data
+    salesPerQuarterTable.innerHTML = '';
+
+    Object.keys(quarterStats).forEach(quarter => {
+        const row = document.createElement('tr');
+        row.innerHTML = `
+            <td>${quarter}</td>
+            <td>₹${quarterStats[quarter].sales.toLocaleString()}</td>
+            <td>${quarterStats[quarter].percentage}%</td>
+        `;
+        salesPerQuarterTable.appendChild(row);
+    });
 }
 
-// Initialize train table
-function initializeTrainTable() {
-    const trains = storage.get('trains') || [];
-    const trainTableBody = document.getElementById('trainTableBody');
+// Populate customers table
+function populateCustomersTable(users, bookings) {
+    const customersTableBody = document.getElementById('customersTableBody');
+    if (!customersTableBody) return;
 
-    if (trainTableBody) {
-        trainTableBody.innerHTML = '';
-
-        if (trains.length === 0) {
-            trainTableBody.innerHTML = `
-                <tr>
-                    <td colspan="6" class="text-center">No trains found</td>
-                </tr>
-            `;
-            return;
+    // Calculate tickets booked per user
+    const userTickets = {};
+    bookings.forEach(booking => {
+        if (!userTickets[booking.userId]) {
+            userTickets[booking.userId] = 0;
         }
+        userTickets[booking.userId] += booking.passengers || 1;
+    });
 
-        // Take only latest 5 trains and sort by added date
-        const latestTrains = trains
-            .sort((a, b) => new Date(b.addedDate) - new Date(a.addedDate))
-            .slice(0, 5);
+    // Update table with user data
+    customersTableBody.innerHTML = '';
 
-        latestTrains.forEach(train => {
-            const row = document.createElement('tr');
-            row.innerHTML = `
-                <td>${train.trainNumber}</td>
-                <td>${train.name}</td>
-                <td>${train.source} to ${train.destination}</td>
-                <td>${train.departureTime}</td>
-                <td>${train.type}</td>
-                <td>
-                    <button class="btn btn-action btn-edit me-1" data-bs-toggle="tooltip" title="Edit Train">
-                        <i class="bi bi-pencil"></i>
-                    </button>
-                    <button class="btn btn-action btn-delete" data-bs-toggle="tooltip" title="Delete Train" data-train-id="${train.id}">
-                        <i class="bi bi-trash"></i>
-                    </button>
-                </td>
-            `;
-            trainTableBody.appendChild(row);
-        });
-
-        // Initialize tooltips
-        initializeTooltips();
+    if (users.length === 0) {
+        customersTableBody.innerHTML = '<tr><td colspan="5" class="text-center">No customers found</td></tr>';
+        return;
     }
+
+    users.forEach(user => {
+        const row = document.createElement('tr');
+        row.innerHTML = `
+            <td>${user.id}</td>
+            <td>${user.name}</td>
+            <td>${user.mobileNumber || 'N/A'}</td>
+            <td>${userTickets[user.id] || 0}</td>
+            <td>
+                <button class="btn btn-action btn-danger" data-user-id="${user.id}" data-bs-toggle="tooltip" title="Delete Customer">
+                    <i class="bi bi-trash"></i>
+                </button>
+            </td>
+        `;
+        customersTableBody.appendChild(row);
+    });
 }
 
-// Initialize recent bookings table
-function initializeRecentBookingsTable() {
-    const bookings = storage.get('bookings') || [];
-    const bookingTableBody = document.getElementById('recentBookingsTableBody');
+// Populate trains table
+function populateTrainsTable(trains) {
+    const trainsTableBody = document.getElementById('trainsTableBody');
+    if (!trainsTableBody) return;
 
-    if (bookingTableBody) {
-        bookingTableBody.innerHTML = '';
+    // Update table with train data
+    trainsTableBody.innerHTML = '';
 
-        if (bookings.length === 0) {
-            bookingTableBody.innerHTML = `
-                <tr>
-                    <td colspan="7" class="text-center">No bookings found</td>
-                </tr>
-            `;
-            return;
-        }
-
-        // Take only latest 5 bookings and sort by booking date
-        const latestBookings = bookings
-            .sort((a, b) => new Date(b.bookingDate) - new Date(a.bookingDate))
-            .slice(0, 5);
-
-        latestBookings.forEach(booking => {
-            const row = document.createElement('tr');
-
-            // Get status badge class
-            let statusBadgeClass;
-            switch (booking.status) {
-                case 'confirmed':
-                    statusBadgeClass = 'bg-success';
-                    break;
-                case 'cancelled':
-                    statusBadgeClass = 'bg-danger';
-                    break;
-                case 'pending':
-                    statusBadgeClass = 'bg-warning';
-                    break;
-                default:
-                    statusBadgeClass = 'bg-secondary';
-            }
-
-            row.innerHTML = `
-                <td>${booking.bookingId}</td>
-                <td>${booking.userId}</td>
-                <td>${booking.trainName} (${booking.trainNumber})</td>
-                <td>${formatDate(booking.journeyDate)}</td>
-                <td>${formatCurrency(booking.fare)}</td>
-                <td><span class="badge ${statusBadgeClass}">${booking.status}</span></td>
-                <td>
-                    <button class="btn btn-action btn-info me-1" data-bs-toggle="tooltip" title="View Details">
-                        <i class="bi bi-eye"></i>
-                    </button>
-                </td>
-            `;
-            bookingTableBody.appendChild(row);
-        });
-
-        // Initialize tooltips
-        initializeTooltips();
+    if (trains.length === 0) {
+        trainsTableBody.innerHTML = '<tr><td colspan="7" class="text-center">No trains found</td></tr>';
+        return;
     }
+
+    trains.forEach(train => {
+        const row = document.createElement('tr');
+        row.innerHTML = `
+            <td>${train.id}</td>
+            <td>${train.name}</td>
+            <td>${train.seats || 'N/A'}</td>
+            <td>${train.source}</td>
+            <td>${train.destination}</td>
+            <td>${train.ownership || 'Indian Railways'}</td>
+            <td>
+                <button class="btn btn-action btn-danger" data-train-id="${train.id}" data-bs-toggle="tooltip" title="Delete Train">
+                    <i class="bi bi-trash"></i>
+                </button>
+            </td>
+        `;
+        trainsTableBody.appendChild(row);
+    });
 }
 
-// Setup event listeners
+// Setup action buttons (delete, edit) - separate from main event listeners
+function setupActionButtons() {
+    console.log('Setting up action buttons');
+
+    // Customer delete buttons
+    const customerDeleteButtons = document.querySelectorAll('.btn-danger[data-user-id]');
+    console.log('Found customer delete buttons:', customerDeleteButtons.length);
+
+    customerDeleteButtons.forEach(button => {
+        button.addEventListener('click', function () {
+            console.log('Customer delete button clicked');
+            const userId = this.getAttribute('data-user-id');
+            console.log('User ID to delete:', userId);
+            confirmDeleteCustomer(userId);
+        });
+    });
+
+    // Train delete buttons
+    const trainDeleteButtons = document.querySelectorAll('.btn-danger[data-train-id]');
+    console.log('Found train delete buttons:', trainDeleteButtons.length);
+
+    trainDeleteButtons.forEach(button => {
+        button.addEventListener('click', function () {
+            console.log('Train delete button clicked');
+            const trainId = this.getAttribute('data-train-id');
+            console.log('Train ID to delete:', trainId);
+            confirmDeleteTrain(trainId);
+        });
+    });
+}
+
+// Setup event listeners for all interactive elements
 function setupEventListeners() {
     // Logout button
     const logoutBtn = document.getElementById('logoutBtn');
     if (logoutBtn) {
         logoutBtn.addEventListener('click', function (e) {
             e.preventDefault();
-            auth.logout();
+            // In a real app, this would clear the session
+            window.location.href = '../auth/login.html';
         });
     }
 
-    // Admin profile button
-    const profileBtn = document.getElementById('profileBtn');
-    if (profileBtn) {
-        profileBtn.addEventListener('click', function (e) {
+    // Smooth scroll for navigation links
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener('click', function (e) {
             e.preventDefault();
-            // Redirect to admin profile page
-            window.location.href = 'admin-profile.html';
+
+            const targetId = this.getAttribute('href');
+            const targetElement = document.querySelector(targetId);
+
+            if (targetElement) {
+                window.scrollTo({
+                    top: targetElement.offsetTop - 70, // Adjust for navbar height
+                    behavior: 'smooth'
+                });
+            }
         });
-    }
-
-    // View all users button
-    const viewAllUsersBtn = document.getElementById('viewAllUsersBtn');
-    if (viewAllUsersBtn) {
-        viewAllUsersBtn.addEventListener('click', function () {
-            window.location.href = 'manage-users.html';
-        });
-    }
-
-    // View all trains button
-    const viewAllTrainsBtn = document.getElementById('viewAllTrainsBtn');
-    if (viewAllTrainsBtn) {
-        viewAllTrainsBtn.addEventListener('click', function () {
-            window.location.href = 'manage-trains.html';
-        });
-    }
-
-    // View all bookings button
-    const viewAllBookingsBtn = document.getElementById('viewAllBookingsBtn');
-    if (viewAllBookingsBtn) {
-        viewAllBookingsBtn.addEventListener('click', function () {
-            window.location.href = 'manage-bookings.html';
-        });
-    }
-
-    // Add train button
-    const addTrainBtn = document.getElementById('addTrainBtn');
-    if (addTrainBtn) {
-        addTrainBtn.addEventListener('click', function () {
-            window.location.href = 'train-form.html';
-        });
-    }
-
-    // Delete user buttons
-    document.addEventListener('click', function (e) {
-        if (e.target && e.target.closest('.btn-delete[data-user-id]')) {
-            const button = e.target.closest('.btn-delete[data-user-id]');
-            const userId = button.getAttribute('data-user-id');
-
-           utils.createConfirmationModal(
-                'Delete User',
-                'Are you sure you want to delete this user? This action cannot be undone.',
-                function () {
-                    deleteUser(userId);
-                }
-            );
-        }
     });
 
-    // Delete train buttons
-    document.addEventListener('click', function (e) {
-        if (e.target && e.target.closest('.btn-delete[data-train-id]')) {
-            const button = e.target.closest('.btn-delete[data-train-id]');
-            const trainId = button.getAttribute('data-train-id');
+    // Set up action buttons (delete, edit)
+    setupActionButtons();
 
-            utils.createConfirmationModal(
-                'Delete Train',
-                'Are you sure you want to delete this train? This action cannot be undone.',
-                function () {
-                    deleteTrain(trainId);
-                }
-            );
-        }
-    });
+    // Delete confirmation
+    const confirmDeleteBtn = document.getElementById('confirmDeleteBtn');
+    if (confirmDeleteBtn) {
+        confirmDeleteBtn.addEventListener('click', function () {
+            const itemType = this.getAttribute('data-type');
+            const itemId = this.getAttribute('data-id');
+
+            if (itemType === 'customer') {
+                deleteCustomer(itemId);
+            } else if (itemType === 'train') {
+                deleteTrain(itemId);
+            }
+        });
+    }
 }
 
-// Delete user
-function deleteUser(userId) {
-    const users = storage.get('users') || [];
+// Confirm delete customer
+function confirmDeleteCustomer(userId) {
+    console.log('Confirming delete for customer:', userId);
+
+    const users = localStorageUtil.get('users') || [];
+    const user = users.find(user => user.id === userId);
+
+    if (!user) {
+        console.error('User not found:', userId);
+        showAlert('User not found', 'danger');
+        return;
+    }
+
+    console.log('Found user to delete:', user);
+
+    // Set delete item type
+    const deleteItemType = document.getElementById('deleteItemType');
+    if (deleteItemType) deleteItemType.textContent = 'customer';
+
+    // Set delete item details
+    const deleteItemDetails = document.getElementById('deleteItemDetails');
+    if (deleteItemDetails) {
+        deleteItemDetails.innerHTML = `
+            <p class="mb-1"><strong>ID:</strong> ${user.id}</p>
+            <p class="mb-1"><strong>Name:</strong> ${user.name}</p>
+            <p class="mb-0"><strong>Mobile:</strong> ${user.mobileNumber || 'N/A'}</p>
+        `;
+    }
+
+    // Set confirm button data
+    const confirmDeleteBtn = document.getElementById('confirmDeleteBtn');
+    if (confirmDeleteBtn) {
+        confirmDeleteBtn.setAttribute('data-type', 'customer');
+        confirmDeleteBtn.setAttribute('data-id', userId);
+    }
+
+    // Show the confirmation modal
+    const modal = new bootstrap.Modal(document.getElementById('deleteConfirmationModal'));
+    modal.show();
+    console.log('Delete confirmation modal shown for customer');
+}
+
+// Delete customer
+function deleteCustomer(userId) {
+    const users = localStorageUtil.get('users') || [];
+    const user = users.find(user => user.id === userId);
     const filteredUsers = users.filter(user => user.id !== userId);
 
-    storage.set('users', filteredUsers);
+    // Save updated users to storage
+    localStorageUtil.set('users', filteredUsers);
 
-    showAlert('User deleted successfully', 'success');
+    // Close the delete confirmation modal and remove backdrop
+    const deleteModal = bootstrap.Modal.getInstance(document.getElementById('deleteConfirmationModal'));
+    if (deleteModal) {
+        deleteModal.hide();
+        // Remove modal backdrop
+        setTimeout(() => {
+            const backdrops = document.querySelectorAll('.modal-backdrop');
+            backdrops.forEach(backdrop => {
+                backdrop.remove();
+            });
+            document.body.classList.remove('modal-open');
+            document.body.style.overflow = '';
+            document.body.style.paddingRight = '';
+        }, 200);
+    }
 
-    // Refresh user table
-    initializeUserTable();
+    // After backdrop is removed, then show success message in modal
+    setTimeout(() => {
+        const successTitle = document.getElementById('successTitle');
+        if (successTitle) {
+            successTitle.textContent = 'Customer Deleted';
+        }
+
+        const successMessage = document.getElementById('successMessage');
+        if (successMessage) {
+            successMessage.textContent = `Customer "${user.name}" has been successfully deleted from the system.`;
+        }
+
+        // Show the success modal
+        const successModal = new bootstrap.Modal(document.getElementById('successModal'));
+        successModal.show();
+
+        // After modal is closed, refresh the dashboard
+        document.getElementById('successModal').addEventListener('hidden.bs.modal', function () {
+            // Ensure this modal's backdrop is also removed
+            const backdrops = document.querySelectorAll('.modal-backdrop');
+            backdrops.forEach(backdrop => {
+                backdrop.remove();
+            });
+            document.body.classList.remove('modal-open');
+            document.body.style.overflow = '';
+            document.body.style.paddingRight = '';
+
+            initializeDashboard();
+        }, { once: true });
+    }, 300);
+}
+
+// Confirm delete train
+function confirmDeleteTrain(trainId) {
+    console.log('Confirming delete for train:', trainId);
+
+    const trains = localStorageUtil.get('trains') || [];
+    const train = trains.find(train => train.id === trainId);
+
+    if (!train) {
+        console.error('Train not found:', trainId);
+        showAlert('Train not found', 'danger');
+        return;
+    }
+
+    console.log('Found train to delete:', train);
+
+    // Set delete item type
+    const deleteItemType = document.getElementById('deleteItemType');
+    if (deleteItemType) deleteItemType.textContent = 'train';
+
+    // Set delete item details
+    const deleteItemDetails = document.getElementById('deleteItemDetails');
+    if (deleteItemDetails) {
+        deleteItemDetails.innerHTML = `
+            <p class="mb-1"><strong>ID:</strong> ${train.id}</p>
+            <p class="mb-1"><strong>Name:</strong> ${train.name}</p>
+            <p class="mb-1"><strong>Route:</strong> ${train.source} to ${train.destination}</p>
+            <p class="mb-0"><strong>Train Number:</strong> ${train.trainNumber || 'N/A'}</p>
+        `;
+    }
+
+    // Set confirm button data
+    const confirmDeleteBtn = document.getElementById('confirmDeleteBtn');
+    if (confirmDeleteBtn) {
+        confirmDeleteBtn.setAttribute('data-type', 'train');
+        confirmDeleteBtn.setAttribute('data-id', trainId);
+    }
+
+    // Show the confirmation modal
+    const modal = new bootstrap.Modal(document.getElementById('deleteConfirmationModal'));
+    modal.show();
+    console.log('Delete confirmation modal shown for train');
 }
 
 // Delete train
 function deleteTrain(trainId) {
-    const trains = storage.get('trains') || [];
+    const trains = localStorageUtil.get('trains') || [];
+    const train = trains.find(train => train.id === trainId);
     const filteredTrains = trains.filter(train => train.id !== trainId);
 
-    storage.set('trains', filteredTrains);
+    // Save updated trains to storage
+    localStorageUtil.set('trains', filteredTrains);
 
-    showAlert('Train deleted successfully', 'success');
+    // Close the delete confirmation modal and remove backdrop
+    const deleteModal = bootstrap.Modal.getInstance(document.getElementById('deleteConfirmationModal'));
+    if (deleteModal) {
+        deleteModal.hide();
+        // Remove modal backdrop
+        setTimeout(() => {
+            const backdrops = document.querySelectorAll('.modal-backdrop');
+            backdrops.forEach(backdrop => {
+                backdrop.remove();
+            });
+            document.body.classList.remove('modal-open');
+            document.body.style.overflow = '';
+            document.body.style.paddingRight = '';
+        }, 200);
+    }
 
-    // Refresh train table
-    initializeTrainTable();
+    // After backdrop is removed, then show success message in modal
+    setTimeout(() => {
+        const successTitle = document.getElementById('successTitle');
+        if (successTitle) {
+            successTitle.textContent = 'Train Deleted';
+        }
+
+        const successMessage = document.getElementById('successMessage');
+        if (successMessage) {
+            successMessage.textContent = `Train "${train.name}" has been successfully deleted from the system.`;
+        }
+
+        // Show the success modal
+        const successModal = new bootstrap.Modal(document.getElementById('successModal'));
+        successModal.show();
+
+        // After modal is closed, refresh the dashboard
+        document.getElementById('successModal').addEventListener('hidden.bs.modal', function () {
+            // Ensure this modal's backdrop is also removed
+            const backdrops = document.querySelectorAll('.modal-backdrop');
+            backdrops.forEach(backdrop => {
+                backdrop.remove();
+            });
+            document.body.classList.remove('modal-open');
+            document.body.style.overflow = '';
+            document.body.style.paddingRight = '';
+
+            initializeDashboard();
+        }, { once: true });
+    }, 300);
 }
 
-// Calculate total revenue from bookings
-function calculateTotalRevenue(bookings) {
-    return bookings
-        .filter(booking => booking.status !== 'cancelled')
-        .reduce((total, booking) => total + booking.fare, 0);
-} 
+// Initialize Bootstrap tooltips
+function initializeTooltips() {
+    const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+    tooltipTriggerList.map(function (tooltipTriggerEl) {
+        return new bootstrap.Tooltip(tooltipTriggerEl);
+    });
+}
+
+// Show alert message
+function showAlert(message, type = 'info') {
+    const alertContainer = document.querySelector('.alert-container');
+    if (!alertContainer) return;
+
+    const alert = document.createElement('div');
+    alert.className = `alert alert-${type} alert-dismissible fade show`;
+    alert.innerHTML = `
+        ${message}
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    `;
+
+    alertContainer.appendChild(alert);
+
+    // Auto-dismiss after 5 seconds
+    setTimeout(() => {
+        alert.classList.remove('show');
+        setTimeout(() => {
+            alertContainer.removeChild(alert);
+        }, 300);
+    }, 5000);
+}
+
+// Extract query parameters from URL
+function getQueryParam(param) {
+    const urlParams = new URLSearchParams(window.location.search);
+    return urlParams.get(param);
+}
+
+// Get mock users data
+function getMockUsers() {
+    const users = [
+        {
+            id: 'USR001',
+            name: 'John Doe',
+            email: 'john.doe@example.com',
+            mobileNumber: '9876543210',
+            registrationDate: '2023-01-15T10:30:00Z'
+        },
+        {
+            id: 'USR002',
+            name: 'Jane Smith',
+            email: 'jane.smith@example.com',
+            mobileNumber: '8765432109',
+            registrationDate: '2023-02-20T14:45:00Z'
+        },
+        {
+            id: 'USR003',
+            name: 'Rahul Kumar',
+            email: 'rahul.kumar@example.com',
+            mobileNumber: '7654321098',
+            registrationDate: '2023-03-10T09:15:00Z'
+        }
+    ];
+
+    // Save to storage if not already there
+    if (!localStorageUtil.get('users')) {
+        localStorageUtil.set('users', users);
+    }
+
+    return users;
+}
+
+// Get mock trains data
+function getMockTrains() {
+    const trains = [
+        {
+            id: 'TRN001',
+            name: 'Rajdhani Express',
+            trainNumber: '12301',
+            source: 'Delhi',
+            destination: 'Mumbai',
+            departureTime: '16:00',
+            type: 'Superfast',
+            seats: 720,
+            ownership: 'Indian Railways',
+            addedDate: '2023-01-05T08:30:00Z'
+        },
+        {
+            id: 'TRN002',
+            name: 'Shatabdi Express',
+            trainNumber: '12002',
+            source: 'Chennai',
+            destination: 'Bangalore',
+            departureTime: '06:15',
+            type: 'Superfast',
+            seats: 650,
+            ownership: 'IRCTC',
+            addedDate: '2023-01-10T09:45:00Z'
+        }
+    ];
+
+    // Save to storage if not already there
+    if (!localStorageUtil.get('trains')) {
+        localStorageUtil.set('trains', trains);
+    }
+
+    return trains;
+}
+
+// Get mock bookings data
+function getMockBookings() {
+    const bookings = [
+        {
+            bookingId: 'BK001',
+            userId: 'USR001',
+            trainNumber: '12301',
+            trainName: 'Rajdhani Express',
+            source: 'Delhi',
+            destination: 'Mumbai',
+            journeyDate: '2023-05-15T16:00:00Z',
+            bookingDate: '2023-04-10T11:30:00Z',
+            class: 'First Class',
+            passengers: 2,
+            fare: 3200,
+            status: 'confirmed'
+        },
+        {
+            bookingId: 'BK002',
+            userId: 'USR002',
+            trainNumber: '12002',
+            trainName: 'Shatabdi Express',
+            source: 'Chennai',
+            destination: 'Bangalore',
+            journeyDate: '2023-06-20T06:15:00Z',
+            bookingDate: '2023-05-18T14:20:00Z',
+            class: 'AC Tier 1',
+            passengers: 1,
+            fare: 1800,
+            status: 'confirmed'
+        },
+        {
+            bookingId: 'BK003',
+            userId: 'USR003',
+            trainNumber: '12301',
+            trainName: 'Rajdhani Express',
+            source: 'Delhi',
+            destination: 'Mumbai',
+            journeyDate: '2023-07-10T16:00:00Z',
+            bookingDate: '2023-06-05T09:45:00Z',
+            class: 'AC Tier 2',
+            passengers: 3,
+            fare: 4500,
+            status: 'confirmed'
+        },
+        {
+            bookingId: 'BK004',
+            userId: 'USR001',
+            trainNumber: '12002',
+            trainName: 'Shatabdi Express',
+            source: 'Bangalore',
+            destination: 'Chennai',
+            journeyDate: '2023-08-05T18:30:00Z',
+            bookingDate: '2023-07-20T10:15:00Z',
+            class: 'AC Tier 3',
+            passengers: 2,
+            fare: 2400,
+            status: 'confirmed'
+        },
+        {
+            bookingId: 'BK005',
+            userId: 'USR002',
+            trainNumber: '12301',
+            trainName: 'Rajdhani Express',
+            source: 'Mumbai',
+            destination: 'Delhi',
+            journeyDate: '2023-08-20T08:45:00Z',
+            bookingDate: '2023-07-25T13:30:00Z',
+            class: 'Sleeper',
+            passengers: 1,
+            fare: 900,
+            status: 'cancelled'
+        }
+    ];
+
+    // Save to storage if not already there
+    if (!localStorageUtil.get('bookings')) {
+        localStorageUtil.set('bookings', bookings);
+    }
+
+    return bookings;
+}
+
+// Storage utility for maintaining data
+const localStorageUtil = {
+    get: function (key) {
+        const data = localStorage.getItem(key);
+        return data ? JSON.parse(data) : null;
+    },
+    set: function (key, value) {
+        localStorage.setItem(key, JSON.stringify(value));
+    },
+    remove: function (key) {
+        localStorage.removeItem(key);
+    }
+}; 

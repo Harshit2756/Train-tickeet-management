@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Book Ticket - Indian Railways</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="../../assets/css/styles.css">
+    <link rel="stylesheet" href="../../assets/css/user/book-ticket.css">
+</head>
+
+<body>
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary sticky-top">
+        <div class="container">
+            <a class="navbar-brand d-flex align-items-center" href="#">
+                <i class="bi bi-train-front me-2"></i>
+                <span>Indian Railways</span>
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="user-dashboard.html">Home</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" href="book-ticket.html">Book Ticket</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="user-dashboard.html#ticketsSection">View Tickets</a>
+                    </li>
+                </ul>
+                <div class="d-flex align-items-center">
+                    <!-- Profile dropdown -->
+                    <div class="dropdown me-3">
+                        <a class="btn btn-primary dropdown-toggle d-flex align-items-center" href="#" role="button"
+                            id="profileDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="bi bi-person-circle me-2"></i> <span id="userNameDisplay">User</span>
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="profileDropdown">
+                            <li>
+                                <h6 class="dropdown-header">Account</h6>
+                            </li>
+                            <li><a class="dropdown-item" href="user-profile.html">View Profile</a></li>
+                            <li>
+                                <hr class="dropdown-divider">
+                            </li>
+                            <li><a class="dropdown-item" href="#" id="logoutBtn">Logout</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Booking Header -->
+    <div class="booking-header">
+        <div class="container">
+            <h1 class="text-center mb-2"><i class="bi bi-ticket-perforated me-3"></i>Book Your Train Ticket</h1>
+            <p class="text-center text-light lead mb-0">Reserve your journey with Indian Railways</p>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <main class="py-4">
+        <div class="container">
+            <!-- Alert Container -->
+            <div class="alert-container mt-3 mb-4"></div>
+
+            <div class="row justify-content-center">
+                <div class="col-lg-10">
+                    <div class="card border-0 shadow">
+                        <div class="card-body p-4">
+                            <form id="bookTicketForm">
+                                <div class="row g-3">
+                                    <!-- User ID field (auto-populated, read-only) -->
+                                    <div class="col-md-4">
+                                        <label for="userId" class="form-label">User ID</label>
+                                        <input type="text" class="form-control bg-light" id="userId" readonly>
+                                    </div>
+
+                                    <!-- Name field -->
+                                    <div class="col-md-4">
+                                        <label for="passengerName" class="form-label">Passenger Name</label>
+                                        <input type="text" class="form-control" id="passengerName" required>
+                                        <div id="passengerNameError" class="form-text text-danger"></div>
+                                    </div>
+
+                                    <!-- Mobile field -->
+                                    <div class="col-md-4">
+                                        <label for="passengerMobile" class="form-label">Mobile Number</label>
+                                        <input type="tel" class="form-control" id="passengerMobile" required>
+                                        <div id="passengerMobileError" class="form-text text-danger"></div>
+                                    </div>
+
+                                    <!-- Age field -->
+                                    <div class="col-md-4">
+                                        <label for="passengerAge" class="form-label">Age</label>
+                                        <input type="number" class="form-control" id="passengerAge" min="1" max="120"
+                                            required>
+                                        <div id="passengerAgeError" class="form-text text-danger"></div>
+                                    </div>
+
+                                    <!-- Travel Date field -->
+                                    <div class="col-md-4">
+                                        <label for="travelDate" class="form-label">Travel Date</label>
+                                        <input type="date" class="form-control" id="travelDate" required>
+                                        <div id="travelDateError" class="form-text text-danger"></div>
+                                    </div>
+
+                                    <!-- Number of Tickets field -->
+                                    <div class="col-md-4">
+                                        <label for="numTickets" class="form-label">Number of Tickets</label>
+                                        <input type="number" class="form-control" id="numTickets" min="1" max="6"
+                                            value="1" required>
+                                        <div id="numTicketsError" class="form-text text-danger"></div>
+                                    </div>
+
+                                    <!-- Boarding Station field -->
+                                    <div class="col-md-6">
+                                        <label for="boardingStation" class="form-label">Boarding Station</label>
+                                        <select class="form-select" id="boardingStation" required>
+                                            <option value="" selected disabled>Select boarding station</option>
+                                            <option value="Delhi">Delhi</option>
+                                            <option value="Mumbai">Mumbai</option>
+                                            <option value="Chennai">Chennai</option>
+                                            <option value="Kolkata">Kolkata</option>
+                                            <option value="Bangalore">Bangalore</option>
+                                            <option value="Hyderabad">Hyderabad</option>
+                                            <option value="Ahmedabad">Ahmedabad</option>
+                                            <option value="Pune">Pune</option>
+                                        </select>
+                                        <div id="boardingStationError" class="form-text text-danger"></div>
+                                    </div>
+
+                                    <!-- Destination Station field -->
+                                    <div class="col-md-6">
+                                        <label for="destinationStation" class="form-label">Destination Station</label>
+                                        <select class="form-select" id="destinationStation" required>
+                                            <option value="" selected disabled>Select destination station</option>
+                                            <option value="Delhi">Delhi</option>
+                                            <option value="Mumbai">Mumbai</option>
+                                            <option value="Chennai">Chennai</option>
+                                            <option value="Kolkata">Kolkata</option>
+                                            <option value="Bangalore">Bangalore</option>
+                                            <option value="Hyderabad">Hyderabad</option>
+                                            <option value="Ahmedabad">Ahmedabad</option>
+                                            <option value="Pune">Pune</option>
+                                        </select>
+                                        <div id="destinationStationError" class="form-text text-danger"></div>
+                                    </div>
+
+                                    <!-- Ticket Category field -->
+                                    <div class="col-md-6">
+                                        <label for="ticketCategory" class="form-label">Ticket Category</label>
+                                        <select class="form-select" id="ticketCategory" required>
+                                            <option value="" selected disabled>Select ticket category</option>
+                                            <option value="First Class">First Class</option>
+                                            <option value="AC Tier 1">AC Tier 1</option>
+                                            <option value="AC Tier 2">AC Tier 2</option>
+                                            <option value="AC Tier 3">AC Tier 3</option>
+                                            <option value="Sleeper">Sleeper</option>
+                                            <option value="General">General</option>
+                                            <option value="Tatkal">Tatkal</option>
+                                        </select>
+                                        <div id="ticketCategoryError" class="form-text text-danger"></div>
+                                    </div>
+
+                                    <!-- Train Selection Instructions (replacing dropdown) -->
+                                    <div class="col-md-6">
+                                        <div class="form-text mb-2 fw-bold">Selected Train</div>
+                                        <div id="selectedTrainDisplay" class="p-3 border rounded bg-light">
+                                            <p class="text-muted mb-0">Please select a train from the list below</p>
+                                        </div>
+                                        <input type="hidden" id="selectedTrainId" required>
+                                        <div id="trainSelectError" class="form-text text-danger"></div>
+                                    </div>
+
+                                    <!-- Available trains section -->
+                                    <div class="col-12 mt-4">
+                                        <h5 class="border-bottom pb-2 mb-3">Available Trains</h5>
+                                        <div id="availableTrains" class="mb-4">
+                                            <div class="alert alert-info">
+                                                <i class="bi bi-info-circle me-2"></i>
+                                                Please select boarding and destination stations to view available
+                                                trains.
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Fare details -->
+                                    <div class="col-md-6 offset-md-6 mt-4">
+                                        <div class="card bg-light">
+                                            <div class="card-header bg-light py-3">
+                                                <h5 class="card-title mb-0">Fare Details</h5>
+                                            </div>
+                                            <div class="card-body">
+                                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                                    <span>Base Fare:</span>
+                                                    <span id="baseFareDisplay">₹0.00</span>
+                                                </div>
+                                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                                    <span>GST (5%):</span>
+                                                    <span id="gstDisplay">₹0.00</span>
+                                                </div>
+                                                <hr>
+                                                <div class="d-flex justify-content-between align-items-center">
+                                                    <span class="fw-bold">Total Fare:</span>
+                                                    <span class="fw-bold" id="totalFareDisplay">₹0.00</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="col-12 mt-4">
+                                        <button type="submit" class="btn btn-primary btn-lg w-100">
+                                            <span id="bookingSpinner"
+                                                class="spinner-border spinner-border-sm me-2 d-none"></span>
+                                            Book Ticket
+                                        </button>
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- View Profile Modal -->
+    <div class="modal fade" id="viewProfileModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-title">User Profile</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
+                        aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="text-center mb-4">
+                        <div class="avatar-circle mx-auto mb-3">
+                            <i class="bi bi-person-circle" style="font-size: 4rem;"></i>
+                        </div>
+                        <h4 id="profileUsername">User</h4>
+                        <p class="text-muted" id="profileRole">Customer</p>
+                    </div>
+
+                    <div class="card mb-3">
+                        <div class="card-header bg-light">
+                            <h6 class="mb-0">Account Information</h6>
+                        </div>
+                        <div class="card-body">
+                            <div class="row mb-3">
+                                <div class="col-4 text-muted">User ID</div>
+                                <div class="col-8" id="profileUserId">user-123456</div>
+                            </div>
+                            <div class="row mb-3">
+                                <div class="col-4 text-muted">Email</div>
+                                <div class="col-8" id="profileEmail">user@example.com</div>
+                            </div>
+                            <div class="row mb-3">
+                                <div class="col-4 text-muted">Mobile</div>
+                                <div class="col-8" id="profileMobile">9876543210</div>
+                            </div>
+                            <div class="row mb-3">
+                                <div class="col-4 text-muted">Address</div>
+                                <div class="col-8" id="profileAddress">123 Main Street, New Delhi, 110001</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="bg-dark text-white py-4 mt-5">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-6 text-center text-md-start">
+                    <p class="mb-0">&copy; 2023 Indian Railways. All rights reserved.</p>
+                </div>
+                <div class="col-md-6 text-center text-md-end">
+                    <p class="mb-0"><small>Customer Service: <a href="tel:139" class="text-white">139</a> | <a
+                                href="mailto:care@indianrail.gov.in"
+                                class="text-white">care@indianrail.gov.in</a></small></p>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="../../assets/js/utils/main.js"></script>
+    <script src="../../assets/js/utils/utils.js"></script>
+    <script src="../../assets/js/auth/auth.js"></script>
+    <script src="../../assets/js/auth/logout.js"></script>
+    <script src="../../assets/js/user/user-validation.js"></script>
+    <script src="../../assets/js/user/book-ticket.js"></script>
+</body>
+
+</html>

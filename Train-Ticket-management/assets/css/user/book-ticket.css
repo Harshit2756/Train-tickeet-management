@@ -1,0 +1,16 @@
+.booking-header {
+    background: linear-gradient(135deg, #0056b3 0%, #004494 100%);
+    padding: 2rem 0;
+    color: white;
+    margin-bottom: 2rem;
+}
+
+.train-card {
+    border-left: 4px solid #0056b3;
+    transition: all 0.3s ease;
+}
+
+.train-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+}

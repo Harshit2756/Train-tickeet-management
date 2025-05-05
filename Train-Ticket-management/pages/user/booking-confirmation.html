@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Booking Confirmation - Indian Railways</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="../../assets/css/styles.css">
+    <style>
+        /* Additional styles for confirmation page */
+        .confirmation-header {
+            background: linear-gradient(135deg, #0056b3 0%, #004494 100%);
+            color: white;
+            padding: 2rem 0;
+            border-radius: 8px 8px 0 0;
+        }
+
+        .ticket-container {
+            border: 1px solid #e9ecef;
+            border-radius: 8px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            background-color: white;
+        }
+
+        .ticket-info {
+            border-bottom: 1px dashed #dee2e6;
+            padding-bottom: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .booking-id {
+            font-family: 'Courier New', monospace;
+            letter-spacing: 1px;
+            padding: 0.5rem 1rem;
+            border: 1px dashed #dee2e6;
+            display: inline-block;
+            border-radius: 4px;
+            background-color: #f8f9fa;
+        }
+
+        .train-route {
+            position: relative;
+            padding: 0 1rem;
+        }
+
+        .route-point {
+            position: relative;
+            padding-left: 20px;
+            margin-bottom: 1rem;
+        }
+
+        .route-point:before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 8px;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background-color: #0056b3;
+        }
+
+        .route-point.to-point:before {
+            background-color: #28a745;
+        }
+
+        .route-line {
+            position: absolute;
+            left: 5px;
+            top: 20px;
+            width: 2px;
+            height: calc(100% - 40px);
+            background-color: #dee2e6;
+        }
+
+        .confirmation-actions {
+            margin-top: 2rem;
+        }
+
+        .success-icon {
+            font-size: 4rem;
+            color: #28a745;
+            margin-bottom: 1rem;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary sticky-top">
+        <div class="container">
+            <a class="navbar-brand d-flex align-items-center" href="#">
+                <i class="bi bi-train-front me-2"></i>
+                <span>Indian Railways</span>
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="user-dashboard.html">Home</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="book-ticket.html">Book Ticket</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="user-dashboard.html#ticketsSection">View Tickets</a>
+                    </li>
+                </ul>
+                <div class="d-flex align-items-center">
+                    <!-- Profile dropdown -->
+                    <div class="dropdown me-3">
+                        <a class="btn btn-primary dropdown-toggle d-flex align-items-center" href="#" role="button"
+                            id="profileDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="bi bi-person-circle me-2"></i> <span id="userNameDisplay">User</span>
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="profileDropdown">
+                            <li>
+                                <h6 class="dropdown-header">Account</h6>
+                            </li>
+                            <li><a class="dropdown-item" href="#" data-bs-toggle="modal"
+                                    data-bs-target="#viewProfileModal">View Profile</a></li>
+                            <li>
+                                <hr class="dropdown-divider">
+                            </li>
+                            <li><a class="dropdown-item" href="#" id="logoutBtn">Logout</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="py-5">
+        <div class="container">
+            <div class="row justify-content-center">
+                <div class="col-lg-10">
+                    <div class="text-center mb-5">
+                        <i class="bi bi-check-circle-fill success-icon"></i>
+                        <h1 class="mb-3">Booking Confirmed!</h1>
+                        <p class="lead mb-0">Your train ticket has been successfully booked.</p>
+                        <p class="text-muted">An email with ticket details has been sent to your registered email
+                            address.</p>
+                    </div>
+
+                    <div class="ticket-container">
+                        <div class="confirmation-header text-center">
+                            <h2 class="mb-0" id="trainName">Train Name</h2>
+                            <p class="mb-0" id="trainRoute">Source to Destination</p>
+                        </div>
+
+                        <div class="p-4">
+                            <div class="ticket-info">
+                                <div class="row mb-4">
+                                    <div class="col-md-6">
+                                        <h5>Booking ID</h5>
+                                        <div class="booking-id" id="bookingId">TKT-123456</div>
+                                    </div>
+                                    <div class="col-md-6 text-md-end">
+                                        <h5>Booking Date</h5>
+                                        <p class="mb-0" id="bookingDate">June 15, 2023</p>
+                                    </div>
+                                </div>
+
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <h5>Journey Details</h5>
+                                        <div class="train-route">
+                                            <div class="route-line"></div>
+                                            <div class="route-point from-point">
+                                                <p class="fw-bold mb-0" id="departureTime">16:30</p>
+                                                <p class="mb-0" id="sourceStation">Delhi</p>
+                                                <p class="text-muted small" id="journeyDate">July 10, 2023</p>
+                                            </div>
+                                            <div class="route-point to-point">
+                                                <p class="fw-bold mb-0" id="arrivalTime">08:45</p>
+                                                <p class="mb-0" id="destinationStation">Mumbai</p>
+                                                <p class="text-muted small" id="arrivalDate">July 11, 2023</p>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="col-md-6">
+                                        <h5>Passenger Details</h5>
+                                        <table class="table table-borderless">
+                                            <tr>
+                                                <th width="40%">Name</th>
+                                                <td id="passengerName">John Doe</td>
+                                            </tr>
+                                            <tr>
+                                                <th>User ID</th>
+                                                <td id="userId">user-123456</td>
+                                            </tr>
+                                            <tr>
+                                                <th>Mobile</th>
+                                                <td id="passengerMobile">9876543210</td>
+                                            </tr>
+                                            <tr>
+                                                <th>Tickets</th>
+                                                <td id="ticketCount">2</td>
+                                            </tr>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <h5>Train Details</h5>
+                                    <table class="table table-borderless">
+                                        <tr>
+                                            <th width="40%">Train No.</th>
+                                            <td id="trainNumber">12345</td>
+                                        </tr>
+                                        <tr>
+                                            <th>Train ID</th>
+                                            <td id="trainId">TRN-001</td>
+                                        </tr>
+                                        <tr>
+                                            <th>Class</th>
+                                            <td id="ticketClass">AC Tier 1</td>
+                                        </tr>
+                                        <tr>
+                                            <th>Status</th>
+                                            <td><span class="badge bg-success" id="ticketStatus">Confirmed</span></td>
+                                        </tr>
+                                    </table>
+                                </div>
+
+                                <div class="col-md-6">
+                                    <h5>Payment Details</h5>
+                                    <table class="table table-borderless">
+                                        <tr>
+                                            <th width="40%">Base Fare</th>
+                                            <td id="baseFare">₹2,800.00</td>
+                                        </tr>
+                                        <tr>
+                                            <th>GST (5%)</th>
+                                            <td id="gstAmount">₹140.00</td>
+                                        </tr>
+                                        <tr>
+                                            <th>Total Amount</th>
+                                            <td class="fw-bold" id="totalFare">₹2,940.00</td>
+                                        </tr>
+                                        <tr>
+                                            <th>Payment Method</th>
+                                            <td>Online Payment</td>
+                                        </tr>
+                                    </table>
+                                </div>
+                            </div>
+
+                            <div class="confirmation-actions text-center">
+                                <button class="btn btn-primary me-2" id="printTicketBtn">
+                                    <i class="bi bi-printer me-2"></i> Print Ticket
+                                </button>
+                                <a href="user-dashboard.html" class="btn btn-outline-primary me-2">
+                                    <i class="bi bi-house me-2"></i> Go to Dashboard
+                                </a>
+                                <a href="book-ticket.html" class="btn btn-success">
+                                    <i class="bi bi-plus-circle me-2"></i> Book Another Ticket
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- View Profile Modal (reused from dashboard) -->
+    <div class="modal fade" id="viewProfileModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-title">User Profile</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
+                        aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="text-center mb-4">
+                        <div class="avatar-circle mx-auto mb-3">
+                            <i class="bi bi-person-circle" style="font-size: 4rem;"></i>
+                        </div>
+                        <h4 id="profileUsername">User</h4>
+                        <p class="text-muted" id="profileRole">Customer</p>
+                    </div>
+
+                    <div class="card mb-3">
+                        <div class="card-header bg-light">
+                            <h6 class="mb-0">Account Information</h6>
+                        </div>
+                        <div class="card-body">
+                            <div class="row mb-3">
+                                <div class="col-4 text-muted">User ID</div>
+                                <div class="col-8" id="profileUserId">user-123456</div>
+                            </div>
+                            <div class="row mb-3">
+                                <div class="col-4 text-muted">Email</div>
+                                <div class="col-8" id="profileEmail">user@example.com</div>
+                            </div>
+                            <div class="row mb-3">
+                                <div class="col-4 text-muted">Mobile</div>
+                                <div class="col-8" id="profileMobile">9876543210</div>
+                            </div>
+                            <div class="row mb-3">
+                                <div class="col-4 text-muted">Address</div>
+                                <div class="col-8" id="profileAddress">123 Main Street, New Delhi, 110001</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="bg-dark text-white py-4 mt-5">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-6 text-center text-md-start">
+                    <p class="mb-0">&copy; 2023 Indian Railways. All rights reserved.</p>
+                </div>
+                <div class="col-md-6 text-center text-md-end">
+                    <p class="mb-0"><small>Customer Service: <a href="tel:139" class="text-white">139</a> | <a
+                                href="mailto:care@indianrail.gov.in"
+                                class="text-white">care@indianrail.gov.in</a></small></p>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="../../assets/js/utils/main.js"></script>
+    <script src="../../assets/js/utils/utils.js"></script>
+    <script src="../../assets/js/auth/auth.js"></script>
+    <script src="../../assets/js/user/booking-confirmation.js"></script>
+
+    <!-- Direct logout script -->
+    <script>
+        // Ensure logout works properly
+        document.addEventListener('DOMContentLoaded', function () {
+            const logoutBtn = document.getElementById('logoutBtn');
+            if (logoutBtn) {
+                logoutBtn.addEventListener('click', function () {
+                    console.log('Logout clicked');
+                    window.location.href = '../../pages/auth/login.html';
+                    return false;
+                });
+            }
+        });
+    </script>
+</body>
+
+</html>

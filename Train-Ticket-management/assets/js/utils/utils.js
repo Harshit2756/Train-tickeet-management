@@ -158,32 +158,30 @@ const storage = {
 
 // Session and authentication helpers
 const auth = {
-    // Login
+    // Login - modified to bypass session storage
     login: function (userData, remember = false) {
-        const storage = remember ? localStorage : sessionStorage;
-        storage.setItem('currentUser', JSON.stringify(userData));
+        console.log('Login successful for:', userData);
+        return true;
     },
-    // Check if user is logged in
+    // Check if user is logged in - always return true
     isLoggedIn: function () {
-        return this.getCurrentUser() !== null;
+        return true;
     },
-    // Get current user
+    // Get current user - return dummy user data
     getCurrentUser: function () {
-        return JSON.parse(localStorage.getItem('currentUser')) ||
-            JSON.parse(sessionStorage.getItem('currentUser'));
+        return {
+            id: 'user-1234',
+            username: 'Harshith',
+            role: 'customer',
+            email: 'harshith@gmail.com'
+        };
     },
-    // Logout
+    // Logout - just redirect without clearing storage
     logout: function () {
-        localStorage.removeItem('currentUser');
-        sessionStorage.removeItem('currentUser');
         window.location.href = '../../pages/auth/login.html';
     }
 };
 
-// Generate random ID
-function generateId(prefix = '') {
-    return `${prefix}${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
-}
 
 // Copy text to clipboard
 function copyToClipboard(text) {
@@ -192,20 +190,20 @@ function copyToClipboard(text) {
         .catch(() => false);
 }
 
-// Calculate time difference between two time strings (HH:MM)
-function calculateTimeDifference(startTime, endTime) {
-    const [startHour, startMinute] = startTime.split(':').map(Number);
-    const [endHour, endMinute] = endTime.split(':').map(Number);
+// // Calculate time difference between two time strings (HH:MM)
+// function calculateTimeDifference(startTime, endTime) {
+//     const [startHour, startMinute] = startTime.split(':').map(Number);
+//     const [endHour, endMinute] = endTime.split(':').map(Number);
 
-    let diffMinutes = (endHour * 60 + endMinute) - (startHour * 60 + startMinute);
+//     let diffMinutes = (endHour * 60 + endMinute) - (startHour * 60 + startMinute);
 
-    // Handle overnight journeys
-    if (diffMinutes < 0) {
-        diffMinutes += 24 * 60; // Add 24 hours in minutes
-    }
+//     // Handle overnight journeys
+//     if (diffMinutes < 0) {
+//         diffMinutes += 24 * 60; // Add 24 hours in minutes
+//     }
 
-    return diffMinutes;
-}
+//     return diffMinutes;
+// }
 
 // Export utilities
 const utils = {
@@ -220,7 +218,6 @@ const utils = {
     formatDistance,
     storage,
     auth,
-    generateId,
     copyToClipboard,
-    calculateTimeDifference
+    // calculateTimeDifference
 };

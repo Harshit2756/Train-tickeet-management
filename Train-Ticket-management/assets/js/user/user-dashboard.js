@@ -1,38 +1,36 @@
 // User Dashboard JavaScript for Indian Railways Ticket Management System
 
 document.addEventListener('DOMContentLoaded', function () {
-    // Check if user is logged in and is a customer
-    const currentUser = auth.getCurrentUser();
-    if (!currentUser || currentUser.role !== 'customer') {
-        window.location.href = '../../pages/auth/login.html';
-        return;
+    // MODIFIED: No authentication check needed
+    // Get dummy user data instead
+    const currentUser = {
+        id: 'user-123456',
+        username: 'Harshit',
+        role: 'customer',
+        email: 'harshit@gmail.com',
+        mobile: '9876543210',
+        address: '123 Main Street, Bangalore, Karnataka, 560001'
+    };
+
+    // Save user data to localStorage for persistance
+    if (!localStorage.getItem('currentUser')) {
+        localStorage.setItem('currentUser', JSON.stringify(currentUser));
     }
 
     // Update user info in UI
     updateUserInfo(currentUser);
 
-    // Initialize dashboard stats
-    initializeDashboardStats(currentUser.id);
+    // Add dummy ticket data
+    addDummyTickets();
 
-    // Generate charts
-    generateBookingHistoryChart(currentUser.id);
-    generateFareDistributionChart(currentUser.id);
+    // Initialize dashboard stats with dummy data
+    initializeDashboardStats();
 
-    // Initialize ticket tables
-    initializeUpcomingTicketsTable(currentUser.id);
-    initializePastTicketsTable(currentUser.id);
+    // Initialize ticket tables with dummy data
+    initializeTicketsTable();
 
     // Setup event listeners
     setupEventListeners();
-
-    // Check for search results and show the booking form if needed
-    const searchResults = storage.get('trainSearchResults');
-    if (searchResults && searchResults.length > 0) {
-        // Show booking form
-        document.getElementById('bookingFormSection').classList.remove('d-none');
-        // Populate form with search results
-        populateTrainSearchResults(searchResults);
-    }
 
     // Show success message if redirected from booking confirmation
     const successMessage = getQueryParam('success');
@@ -43,6 +41,12 @@ document.addEventListener('DOMContentLoaded', function () {
 
 // Update user information in the UI
 function updateUserInfo(user) {
+    // Display username in navbar
+    const userNameDisplay = document.getElementById('userNameDisplay');
+    if (userNameDisplay) {
+        userNameDisplay.textContent = user.username;
+    }
+
     // Update welcome message
     const welcomeMessage = document.getElementById('welcomeMessage');
     if (welcomeMessage) {
@@ -63,259 +67,162 @@ function updateUserInfo(user) {
 }
 
 // Initialize dashboard statistics
-function initializeDashboardStats(userId) {
-    // Get all bookings for the user
-    const bookings = storage.get('bookings') || [];
-    const userBookings = bookings.filter(booking => booking.userId === userId);
-
-    // Calculate stats
-    const totalBookings = userBookings.length;
-    const upcomingBookings = userBookings.filter(booking =>
-        booking.status !== 'cancelled' &&
-        new Date(booking.journeyDate) > new Date()
-    ).length;
-
-    const pastBookings = userBookings.filter(booking =>
-        booking.status !== 'cancelled' &&
-        new Date(booking.journeyDate) <= new Date()
-    ).length;
-
-    const cancelledBookings = userBookings.filter(booking =>
-        booking.status === 'cancelled'
-    ).length;
-
-    const totalSpent = userBookings
-        .filter(booking => booking.status !== 'cancelled')
-        .reduce((total, booking) => total + booking.fare, 0);
-
-    // Update UI with stats
-    document.getElementById('totalBookings').textContent = totalBookings;
-    document.getElementById('upcomingTrips').textContent = upcomingBookings;
-    document.getElementById('pastTrips').textContent = pastBookings;
-    document.getElementById('cancelledTrips').textContent = cancelledBookings;
-    document.getElementById('totalSpent').textContent = formatCurrency(totalSpent);
+function initializeDashboardStats() {
+    document.getElementById('totalBookings').textContent = '3';
+    document.getElementById('activeBookings').textContent = '2';
+    document.getElementById('firstClassBookings').textContent = '1';
+    document.getElementById('acBookings').textContent = '1';
 }
 
-// Generate booking history chart
-function generateBookingHistoryChart(userId) {
-    const ctx = document.getElementById('bookingHistoryChart').getContext('2d');
-
-    // Get all bookings for the user
-    const bookings = storage.get('bookings') || [];
-    const userBookings = bookings.filter(booking => booking.userId === userId);
-
-    // Get last 6 months
-    const months = [];
-    const currentDate = new Date();
-
-    for (let i = 5; i >= 0; i--) {
-        const month = new Date(currentDate.getFullYear(), currentDate.getMonth() - i, 1);
-        months.push(month.toLocaleDateString('en-US', { month: 'short' }));
-    }
-
-    // Count bookings per month
-    const bookingsPerMonth = Array(6).fill(0);
-
-    userBookings.forEach(booking => {
-        const bookingDate = new Date(booking.bookingDate);
-
-        for (let i = 0; i < 6; i++) {
-            const monthDate = new Date(currentDate.getFullYear(), currentDate.getMonth() - i, 1);
-
-            if (bookingDate.getMonth() === monthDate.getMonth() &&
-                bookingDate.getFullYear() === monthDate.getFullYear()) {
-                bookingsPerMonth[5 - i]++;
-                break;
-            }
-        }
-    });
-
-    new Chart(ctx, {
-        type: 'bar',
-        data: {
-            labels: months,
-            datasets: [{
-                label: 'Bookings',
-                data: bookingsPerMonth,
-                backgroundColor: 'rgba(0, 86, 179, 0.7)',
-                borderColor: 'rgba(0, 86, 179, 1)',
-                borderWidth: 1
-            }]
+// Add dummy ticket data
+function addDummyTickets() {
+    // Create dummy ticket data
+    const dummyTickets = [
+        {
+            bookingId: 'TKT-12345',
+            userId: 'user-123456',
+            trainId: 'TRN-001',
+            trainNumber: '12345',
+            trainName: 'Rajdhani Express',
+            source: 'Delhi',
+            destination: 'Mumbai',
+            departureTime: '16:30',
+            arrivalTime: '08:45',
+            journeyDate: '2023-12-15',
+            bookingDate: '2023-11-30',
+            passengerName: 'John Doe',
+            passengerAge: 32,
+            passengerGender: 'Male',
+            passengerCount: 2,
+            class: 'AC Tier 1',
+            fare: 3200,
+            status: 'confirmed'
         },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-                legend: {
-                    display: false
-                }
-            },
-            scales: {
-                y: {
-                    beginAtZero: true,
-                    ticks: {
-                        precision: 0
-                    }
-                }
-            }
-        }
-    });
-}
-
-// Generate fare distribution chart
-function generateFareDistributionChart(userId) {
-    const ctx = document.getElementById('fareDistributionChart').getContext('2d');
-
-    // Get all bookings for the user
-    const bookings = storage.get('bookings') || [];
-    const userBookings = bookings.filter(booking =>
-        booking.userId === userId &&
-        booking.status !== 'cancelled'
-    );
-
-    // Count tickets by class
-    const ticketClasses = ['Economy', 'Standard', 'Business', 'First Class'];
-    const ticketsByClass = [0, 0, 0, 0];
-
-    userBookings.forEach(booking => {
-        if (booking.class === 'Economy') ticketsByClass[0]++;
-        else if (booking.class === 'Standard') ticketsByClass[1]++;
-        else if (booking.class === 'Business') ticketsByClass[2]++;
-        else if (booking.class === 'First Class') ticketsByClass[3]++;
-    });
-
-    new Chart(ctx, {
-        type: 'doughnut',
-        data: {
-            labels: ticketClasses,
-            datasets: [{
-                data: ticketsByClass,
-                backgroundColor: [
-                    'rgba(0, 86, 179, 0.8)',
-                    'rgba(0, 68, 148, 0.8)',
-                    'rgba(255, 107, 0, 0.8)',
-                    'rgba(40, 167, 69, 0.8)'
-                ],
-                borderWidth: 1
-            }]
+        {
+            bookingId: 'TKT-67890',
+            userId: 'user-123456',
+            trainId: 'TRN-002',
+            trainNumber: '54321',
+            trainName: 'Shatabdi Express',
+            source: 'Bangalore',
+            destination: 'Chennai',
+            departureTime: '09:15',
+            arrivalTime: '14:30',
+            journeyDate: '2023-12-20',
+            bookingDate: '2023-12-01',
+            passengerName: 'Jane Smith',
+            passengerAge: 28,
+            passengerGender: 'Female',
+            passengerCount: 1,
+            class: 'AC Tier 2',
+            fare: 1800,
+            status: 'confirmed'
         },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-                legend: {
-                    position: 'bottom'
-                }
-            }
+        {
+            bookingId: 'TKT-24680',
+            userId: 'user-123456',
+            trainId: 'TRN-003',
+            trainNumber: '98765',
+            trainName: 'Duronto Express',
+            source: 'Kolkata',
+            destination: 'Delhi',
+            departureTime: '23:55',
+            arrivalTime: '12:40',
+            journeyDate: '2023-11-25',
+            bookingDate: '2023-11-10',
+            passengerName: 'Alex Johnson',
+            passengerAge: 45,
+            passengerGender: 'Male',
+            passengerCount: 3,
+            class: 'Sleeper',
+            fare: 2500,
+            status: 'cancelled'
         }
-    });
+    ];
+
+    // Store in localStorage
+    localStorage.setItem('bookings', JSON.stringify(dummyTickets));
 }
 
-// Initialize upcoming tickets table
-function initializeUpcomingTicketsTable(userId) {
-    const bookings = storage.get('bookings') || [];
-    const today = new Date();
-
-    // Filter upcoming tickets
-    const upcomingTickets = bookings.filter(booking =>
-        booking.userId === userId &&
-        booking.status !== 'cancelled' &&
-        new Date(booking.journeyDate) > today
-    );
-
-    // Sort by journey date (ascending)
-    upcomingTickets.sort((a, b) => new Date(a.journeyDate) - new Date(b.journeyDate));
-
-    const tableBody = document.getElementById('upcomingTicketsTableBody');
+// Initialize tickets table with dummy data
+function initializeTicketsTable() {
+    const bookings = JSON.parse(localStorage.getItem('bookings')) || [];
+    const tableBody = document.getElementById('ticketsTableBody');
 
     if (tableBody) {
         tableBody.innerHTML = '';
 
-        if (upcomingTickets.length === 0) {
+        if (bookings.length === 0) {
             tableBody.innerHTML = `
                 <tr>
-                    <td colspan="7" class="text-center">No upcoming tickets found</td>
+                    <td colspan="11" class="text-center py-5">
+                        <div class="empty-tickets-message">
+                            <i class="bi bi-ticket-detailed text-muted" style="font-size: 3rem;"></i>
+                            <p class="mt-3 mb-0 fw-bold">No tickets found.</p>
+                            <p class="text-muted">Book your first journey!</p>
+                        </div>
+                    </td>
                 </tr>
             `;
             return;
         }
 
         // Display tickets
-        upcomingTickets.forEach(ticket => {
+        bookings.forEach(ticket => {
             const row = document.createElement('tr');
+
+            // Get status badge class
+            let statusBadgeClass = 'bg-success';
+            if (ticket.status === 'cancelled') {
+                statusBadgeClass = 'bg-danger';
+            } else if (ticket.status === 'pending') {
+                statusBadgeClass = 'bg-warning';
+            }
+
+            // Only show cancel button if ticket is not cancelled
+            const cancelButtonHtml = ticket.status !== 'cancelled' ?
+                `<button class="btn cancel-ticket-btn btn-danger" data-booking-id="${ticket.bookingId}" data-bs-toggle="tooltip" title="Cancel Ticket">
+                    <i class="bi bi-x-circle"></i>
+                </button>` : '';
+
+            // Get user data
+            const userData = JSON.parse(localStorage.getItem('currentUser')) || {};
+
             row.innerHTML = `
                 <td>${ticket.bookingId}</td>
-                <td>${ticket.trainName} (${ticket.trainNumber})</td>
-                <td>${ticket.source} to ${ticket.destination}</td>
-                <td>${formatDate(ticket.journeyDate)}</td>
-                <td>${ticket.departureTime}</td>
-                <td>${ticket.class}</td>
+                <td>${ticket.trainId}</td>
+                <td>${ticket.userId}</td>
+                <td>${userData.username || ticket.passengerName}</td>
+                <td>${ticket.source}</td>
+                <td>${ticket.destination}</td>
+                <td>${formatDate(ticket.journeyDate)} ${ticket.departureTime}</td>
+                <td>${formatDate(ticket.journeyDate)} ${ticket.arrivalTime}</td>
+                <td>${ticket.passengerCount}</td>
+                <td><span class="badge ${statusBadgeClass}">${ticket.status}</span></td>
                 <td>
-                    <button class="btn btn-action btn-info me-1 view-ticket-btn" data-booking-id="${ticket.bookingId}" data-bs-toggle="tooltip" title="View Ticket">
+                    <div class="actions-container">
+                        <button class="btn view-ticket-btn btn-primary" data-booking-id="${ticket.bookingId}" data-bs-toggle="tooltip" title="View Ticket">
                         <i class="bi bi-eye"></i>
                     </button>
-                    <button class="btn btn-action btn-danger cancel-ticket-btn" data-booking-id="${ticket.bookingId}" data-bs-toggle="tooltip" title="Cancel Ticket">
-                        <i class="bi bi-x-circle"></i>
-                    </button>
+                        ${cancelButtonHtml}
+                    </div>
                 </td>
             `;
             tableBody.appendChild(row);
         });
 
         // Initialize tooltips
-        initializeTooltips();
+        const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+        tooltipTriggerList.map(function (tooltipTriggerEl) {
+            return new bootstrap.Tooltip(tooltipTriggerEl);
+        });
     }
 }
 
-// Initialize past tickets table
-function initializePastTicketsTable(userId) {
-    const bookings = storage.get('bookings') || [];
-    const today = new Date();
-
-    // Filter past tickets
-    const pastTickets = bookings.filter(booking =>
-        booking.userId === userId &&
-        (booking.status !== 'cancelled' && new Date(booking.journeyDate) <= today)
-    );
-
-    // Sort by journey date (descending)
-    pastTickets.sort((a, b) => new Date(b.journeyDate) - new Date(a.journeyDate));
-
-    const tableBody = document.getElementById('pastTicketsTableBody');
-
-    if (tableBody) {
-        tableBody.innerHTML = '';
-
-        if (pastTickets.length === 0) {
-            tableBody.innerHTML = `
-                <tr>
-                    <td colspan="6" class="text-center">No past tickets found</td>
-                </tr>
-            `;
-            return;
-        }
-
-        // Display tickets
-        pastTickets.forEach(ticket => {
-            const row = document.createElement('tr');
-            row.innerHTML = `
-                <td>${ticket.bookingId}</td>
-                <td>${ticket.trainName} (${ticket.trainNumber})</td>
-                <td>${ticket.source} to ${ticket.destination}</td>
-                <td>${formatDate(ticket.journeyDate)}</td>
-                <td>${ticket.class}</td>
-                <td>
-                    <button class="btn btn-action btn-info view-ticket-btn" data-booking-id="${ticket.bookingId}" data-bs-toggle="tooltip" title="View Ticket">
-                        <i class="bi bi-eye"></i>
-                    </button>
-                </td>
-            `;
-            tableBody.appendChild(row);
-        });
-
-        // Initialize tooltips
-        initializeTooltips();
-    }
+// Format date function
+function formatDate(dateString) {
+    const options = { year: 'numeric', month: 'long', day: 'numeric' };
+    return new Date(dateString).toLocaleDateString('en-US', options);
 }
 
 // Populate train search results
@@ -465,319 +372,246 @@ function updateTotalFare(passengerCount, fare) {
 
 // Setup event listeners
 function setupEventListeners() {
-    // Logout button
+    // Logout button event listener with direct window.location redirect
     const logoutBtn = document.getElementById('logoutBtn');
     if (logoutBtn) {
         logoutBtn.addEventListener('click', function (e) {
             e.preventDefault();
-            auth.logout();
+            console.log('Logout button clicked in user-dashboard.js');
+            // Direct redirect without using utils
+            window.location.href = '../../pages/auth/login.html';
         });
     }
 
-    // Profile button
-    const profileBtn = document.getElementById('profileBtn');
-    if (profileBtn) {
-        profileBtn.addEventListener('click', function (e) {
+    // View Tickets link
+    const viewTicketsLink = document.getElementById('viewTicketsLink');
+    if (viewTicketsLink) {
+        viewTicketsLink.addEventListener('click', function (e) {
             e.preventDefault();
-            window.location.href = 'user-profile.html';
+            const ticketsSection = document.getElementById('ticketsSection');
+            if (ticketsSection) {
+                ticketsSection.scrollIntoView({ behavior: 'smooth' });
+            }
         });
     }
-
-    // Train search form
-    const searchForm = document.getElementById('trainSearchForm');
-    if (searchForm) {
-        searchForm.addEventListener('submit', function (e) {
-            e.preventDefault();
-
-            // Get form values
-            const source = document.getElementById('sourceStation').value;
-            const destination = document.getElementById('destinationStation').value;
-            const journeyDate = document.getElementById('journeyDate').value;
-
-            // Validate form
-            if (!source || !destination || !journeyDate) {
-                showAlert('Please fill all required fields', 'danger');
-                return;
-            }
-
-            if (source === destination) {
-                showAlert('Source and destination cannot be the same', 'danger');
-                return;
-            }
-
-            const today = new Date();
-            today.setHours(0, 0, 0, 0);
-
-            const selectedDate = new Date(journeyDate);
-            if (selectedDate < today) {
-                showAlert('Journey date cannot be in the past', 'danger');
-                return;
-            }
-
-            // Show loading spinner
-            document.getElementById('searchSpinner').classList.remove('d-none');
-
-            // Simulate API call to search trains
-            setTimeout(() => {
-                // Get available trains
-                const trains = storage.get('trains') || [];
-
-                // Filter trains by route
-                const availableTrains = trains.filter(train =>
-                    train.source.toLowerCase() === source.toLowerCase() &&
-                    train.destination.toLowerCase() === destination.toLowerCase()
-                );
-
-                // Hide loading spinner
-                document.getElementById('searchSpinner').classList.add('d-none');
-
-                if (availableTrains.length === 0) {
-                    showAlert('No trains found for this route. Please try different stations or dates.', 'warning');
-                    return;
-                }
-
-                // Store search results
-                storage.set('trainSearchResults', availableTrains);
-
-                // Show booking form section
-                document.getElementById('bookingFormSection').classList.remove('d-none');
-
-                // Populate search results
-                populateTrainSearchResults(availableTrains);
-
-                // Scroll to results
-                document.getElementById('bookingFormSection').scrollIntoView({ behavior: 'smooth' });
-
-            }, 1500); // Simulate network delay
-        });
-    }
-
-    // Book ticket form
-    const bookTicketForm = document.getElementById('bookTicketForm');
-    if (bookTicketForm) {
-        bookTicketForm.addEventListener('submit', function (e) {
-            e.preventDefault();
-
-            // Get current user
-            const currentUser = auth.getCurrentUser();
-            if (!currentUser) {
-                window.location.href = '../../pages/auth/login.html';
-                return;
-            }
-
-            // Get selected train
-            const selectedTrain = storage.get('selectedTrain');
-            if (!selectedTrain) {
-                showAlert('No train selected. Please search and select a train first.', 'danger');
-                return;
-            }
-
-            // Get form values
-            const passengerName = document.getElementById('passengerName').value;
-            const passengerAge = document.getElementById('passengerAge').value;
-            const passengerGender = document.getElementById('passengerGender').value;
-            const passengerCount = parseInt(document.getElementById('passengerCount').value);
-            const journeyDate = document.getElementById('bookingJourneyDate').value;
-            const fareClass = document.querySelector('input[name="fareClass"]:checked').value;
-            const farePer = parseFloat(document.querySelector('input[name="fareClass"]:checked').getAttribute('data-fare'));
-
-            // Validate form
-            if (!passengerName || !passengerAge || !passengerGender || !passengerCount || !journeyDate || !fareClass) {
-                showAlert('Please fill all required fields', 'danger');
-                return;
-            }
-
-            if (passengerCount < 1) {
-                showAlert('Passenger count must be at least 1', 'danger');
-                return;
-            }
-
-            const today = new Date();
-            today.setHours(0, 0, 0, 0);
-
-            const selectedDate = new Date(journeyDate);
-            if (selectedDate < today) {
-                showAlert('Journey date cannot be in the past', 'danger');
-                return;
-            }
-
-            // Show loading spinner
-            document.getElementById('bookingSpinner').classList.remove('d-none');
-
-            // Simulate API call to book ticket
-            setTimeout(() => {
-                // Calculate total fare
-                const totalFare = passengerCount * farePer;
-
-                // Create booking object
-                const booking = {
-                    bookingId: `BOOKING-${Date.now()}`,
-                    userId: currentUser.id,
-                    trainId: selectedTrain.id,
-                    trainNumber: selectedTrain.trainNumber,
-                    trainName: selectedTrain.name,
-                    source: selectedTrain.source,
-                    destination: selectedTrain.destination,
-                    departureTime: selectedTrain.departureTime,
-                    arrivalTime: selectedTrain.arrivalTime,
-                    journeyDate: journeyDate,
-                    bookingDate: new Date().toISOString(),
-                    passengerName: passengerName,
-                    passengerAge: passengerAge,
-                    passengerGender: passengerGender,
-                    passengerCount: passengerCount,
-                    class: fareClass,
-                    fare: totalFare,
-                    status: 'confirmed'
-                };
-
-                // Get existing bookings or initialize empty array
-                const bookings = storage.get('bookings') || [];
-
-                // Add booking
-                bookings.push(booking);
-
-                // Save to localStorage
-                storage.set('bookings', bookings);
-
-                // Reset form
-                bookTicketForm.reset();
-
-                // Hide booking form
-                bookTicketForm.classList.add('d-none');
-
-                // Hide search results
-                document.getElementById('trainSearchResults').classList.add('d-none');
-
-                // Clear stored search results and selected train
-                storage.remove('trainSearchResults');
-                storage.remove('selectedTrain');
-
-                // Hide loading spinner
-                document.getElementById('bookingSpinner').classList.add('d-none');
-
-                // Redirect to ticket confirmation or show success message
-                window.location.href = 'user-dashboard.html?success=' + encodeURIComponent('Ticket booked successfully! You can view it in your upcoming tickets.');
-
-            }, 2000); // Simulate network delay
-        });
-    }
-
-    // Cancel booking buttons
-    document.addEventListener('click', function (e) {
-        if (e.target && e.target.closest('.cancel-ticket-btn')) {
-            const button = e.target.closest('.cancel-ticket-btn');
-            const bookingId = button.getAttribute('data-booking-id');
-
-            utils.createConfirmationModal(
-                'Cancel Ticket',
-                'Are you sure you want to cancel this ticket? This action cannot be undone.',
-                function () {
-                    cancelTicket(bookingId);
-                }
-            );
-        }
-    });
 
     // View ticket buttons
     document.addEventListener('click', function (e) {
-        if (e.target && e.target.closest('.view-ticket-btn')) {
+        if (e.target.closest('.view-ticket-btn')) {
             const button = e.target.closest('.view-ticket-btn');
             const bookingId = button.getAttribute('data-booking-id');
-
             viewTicket(bookingId);
         }
     });
+
+    // Cancel ticket buttons in the tickets table
+    document.addEventListener('click', function (e) {
+        if (e.target.closest('.cancel-ticket-btn')) {
+            const button = e.target.closest('.cancel-ticket-btn');
+            const bookingId = button.getAttribute('data-booking-id');
+            showCancelConfirmation(bookingId);
+        }
+    });
+
+    // Print ticket button
+    const printTicketBtn = document.getElementById('printTicketBtn');
+    if (printTicketBtn) {
+        printTicketBtn.addEventListener('click', function () {
+            window.print();
+        });
+    }
 }
 
-// Cancel ticket
-function cancelTicket(bookingId) {
-    const bookings = storage.get('bookings') || [];
+// Show cancel confirmation modal
+function showCancelConfirmation(bookingId) {
+    // Get booking details
+    const bookings = JSON.parse(localStorage.getItem('bookings')) || [];
+    const booking = bookings.find(b => b.bookingId === bookingId);
 
-    // Find the booking
-    const bookingIndex = bookings.findIndex(booking => booking.bookingId === bookingId);
-
-    if (bookingIndex === -1) {
-        showAlert('Booking not found', 'danger');
+    if (!booking) {
         return;
     }
 
-    // Update the booking status
+    // Create and show confirmation modal
+    const modal = document.createElement('div');
+    modal.className = 'modal fade';
+    modal.id = 'cancelTicketModal';
+    modal.setAttribute('tabindex', '-1');
+    modal.setAttribute('aria-hidden', 'true');
+
+    modal.innerHTML = `
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header bg-danger text-white">
+                    <h5 class="modal-title">Cancel Ticket</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p>Are you sure you want to cancel the following ticket?</p>
+                    <div class="alert alert-info">
+                        <p><strong>Booking ID:</strong> ${booking.bookingId}</p>
+                        <p><strong>Train:</strong> ${booking.trainName} (${booking.trainNumber})</p>
+                        <p><strong>Journey:</strong> ${booking.source} to ${booking.destination}</p>
+                        <p><strong>Date:</strong> ${formatDate(booking.journeyDate)}</p>
+                    </div>
+                    <p class="text-danger">This action cannot be undone.</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">No, Keep My Ticket</button>
+                    <button type="button" class="btn btn-danger" id="confirmCancelBtn">Yes, Cancel Ticket</button>
+                </div>
+            </div>
+        </div>
+    `;
+
+    // Add to body
+    document.body.appendChild(modal);
+
+    // Show modal
+    const modalInstance = new bootstrap.Modal(modal);
+    modalInstance.show();
+
+    // Add event listener to confirm button
+    document.getElementById('confirmCancelBtn').addEventListener('click', function () {
+        cancelTicket(bookingId);
+        modalInstance.hide();
+
+        // Remove modal from DOM after hiding
+        modal.addEventListener('hidden.bs.modal', function () {
+            modal.remove();
+        });
+    });
+
+    // Remove modal from DOM when hidden
+    modal.addEventListener('hidden.bs.modal', function () {
+        modal.remove();
+    });
+}
+
+// Cancel ticket function
+function cancelTicket(bookingId) {
+    const bookings = JSON.parse(localStorage.getItem('bookings')) || [];
+    const bookingIndex = bookings.findIndex(b => b.bookingId === bookingId);
+
+    if (bookingIndex === -1) {
+        return;
+    }
+
+    // Update status to cancelled
     bookings[bookingIndex].status = 'cancelled';
 
-    // Save to localStorage
-    storage.set('bookings', bookings);
+    // Save back to localStorage
+    localStorage.setItem('bookings', JSON.stringify(bookings));
+
+    // Refresh tickets table
+    initializeTicketsTable();
 
     // Show success message
-    showAlert('Ticket cancelled successfully', 'success');
-
-    // Refresh ticket tables
-    const currentUser = auth.getCurrentUser();
-    if (currentUser) {
-        initializeUpcomingTicketsTable(currentUser.id);
-        initializeDashboardStats(currentUser.id);
-    }
+    showAlert('Ticket cancelled successfully!', 'success');
 }
 
 // View ticket details
 function viewTicket(bookingId) {
-    const bookings = storage.get('bookings') || [];
-
-    // Find the booking
-    const booking = bookings.find(booking => booking.bookingId === bookingId);
+    const bookings = JSON.parse(localStorage.getItem('bookings')) || [];
+    const booking = bookings.find(b => b.bookingId === bookingId);
 
     if (!booking) {
-        showAlert('Booking not found', 'danger');
         return;
     }
 
-    // Populate ticket modal
-    const modal = new bootstrap.Modal(document.getElementById('ticketDetailsModal'));
-
+    // Populate modal with ticket details
     document.getElementById('modalTrainName').textContent = `${booking.trainName} (${booking.trainNumber})`;
     document.getElementById('modalJourneyDetails').textContent = `${booking.source} to ${booking.destination}`;
+    document.getElementById('modalStatus').textContent = booking.status;
+    document.getElementById('modalStatus').className = `badge ${booking.status === 'confirmed' ? 'bg-success' : 'bg-danger'} mb-3`;
+
+    // Train details
+    document.getElementById('modalTrainId').textContent = booking.trainId;
+    document.getElementById('modalBoardingStation').textContent = booking.source;
+    document.getElementById('modalDestinationStation').textContent = booking.destination;
     document.getElementById('modalJourneyDate').textContent = formatDate(booking.journeyDate);
     document.getElementById('modalDepartureTime').textContent = booking.departureTime;
+    document.getElementById('modalArrivalTime').textContent = booking.arrivalTime;
     document.getElementById('modalClass').textContent = booking.class;
+
+    // Passenger details
+    document.getElementById('modalUserId').textContent = booking.userId;
     document.getElementById('modalPassengerName').textContent = booking.passengerName;
     document.getElementById('modalPassengerDetails').textContent = `${booking.passengerAge} years, ${booking.passengerGender}`;
     document.getElementById('modalPassengerCount').textContent = booking.passengerCount;
-    document.getElementById('modalFare').textContent = formatCurrency(booking.fare);
+    document.getElementById('modalFare').textContent = `₹${booking.fare}`;
+
+    // Booking details
     document.getElementById('modalBookingId').textContent = booking.bookingId;
     document.getElementById('modalBookingDate').textContent = formatDate(booking.bookingDate);
+    document.getElementById('modalStatusDetail').textContent = booking.status;
+    document.getElementById('modalStatusDetail').className = `badge ${booking.status === 'confirmed' ? 'bg-success' : 'bg-danger'}`;
 
-    // Update status badge
-    const statusBadge = document.getElementById('modalStatus');
-    statusBadge.textContent = booking.status;
+    // Handle cancel button - only create it if ticket is not cancelled
+    const cancelButtonContainer = document.getElementById('cancelButtonContainer');
+    cancelButtonContainer.innerHTML = ''; // Clear previous button
 
-    if (booking.status === 'confirmed') {
-        statusBadge.className = 'badge bg-success';
-    } else if (booking.status === 'cancelled') {
-        statusBadge.className = 'badge bg-danger';
-    } else {
-        statusBadge.className = 'badge bg-warning';
-    }
-
-    // Show print and cancel buttons based on status
-    const printBtn = document.getElementById('printTicketBtn');
-    const cancelBtn = document.getElementById('cancelTicketBtn');
-
-    if (booking.status === 'confirmed' && new Date(booking.journeyDate) > new Date()) {
-        printBtn.classList.remove('d-none');
-        cancelBtn.classList.remove('d-none');
-
-        // Update cancel button data attribute
+    if (booking.status !== 'cancelled') {
+        const cancelBtn = document.createElement('button');
+        cancelBtn.type = 'button';
+        cancelBtn.className = 'btn btn-danger';
+        cancelBtn.id = 'cancelTicketBtn';
+        cancelBtn.innerHTML = '<i class="bi bi-x-circle me-1"></i> Cancel Ticket';
         cancelBtn.setAttribute('data-booking-id', booking.bookingId);
-    } else {
-        printBtn.classList.add('d-none');
-        cancelBtn.classList.add('d-none');
-    }
+        cancelBtn.style.borderRadius = '4px';  // Make it look consistent
+        cancelBtn.style.padding = '0.5rem 1rem';  // Proper padding
 
-    // Set up print button
-    printBtn.addEventListener('click', function () {
-        window.print();
-    });
+        // Add event listener
+        cancelBtn.addEventListener('click', function () {
+            const bookingId = this.getAttribute('data-booking-id');
+            // Hide the current modal
+            const ticketModal = bootstrap.Modal.getInstance(document.getElementById('ticketDetailsModal'));
+            if (ticketModal) {
+                ticketModal.hide();
+            }
+
+            // Show the cancel confirmation
+            setTimeout(() => {
+                showCancelConfirmation(bookingId);
+            }, 500);
+        });
+
+        cancelButtonContainer.appendChild(cancelBtn);
+    }
 
     // Show modal
-    modal.show();
-} 
+    const ticketModal = new bootstrap.Modal(document.getElementById('ticketDetailsModal'));
+    ticketModal.show();
+}
+
+// Show alert function
+function showAlert(message, type = 'info') {
+    const alertContainer = document.querySelector('.alert-container');
+    if (!alertContainer) return;
+
+    // Create alert element
+    const alert = document.createElement('div');
+    alert.className = `alert alert-${type} alert-dismissible fade show`;
+    alert.innerHTML = `
+        ${message}
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    `;
+
+    // Clear previous alerts
+    alertContainer.innerHTML = '';
+
+    // Add alert to container
+    alertContainer.appendChild(alert);
+
+    // Auto dismiss after 5 seconds
+    setTimeout(() => {
+        const bsAlert = new bootstrap.Alert(alert);
+        bsAlert.close();
+    }, 5000);
+}
+
+// Get URL query parameter
+function getQueryParam(param) {
+    const urlParams = new URLSearchParams(window.location.search);
+    return urlParams.get(param);
+}

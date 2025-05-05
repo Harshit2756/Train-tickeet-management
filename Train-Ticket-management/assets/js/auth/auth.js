@@ -92,7 +92,6 @@ function setupLoginForm(loginForm) {
         const username = usernameField.value.trim();
         const password = passwordField.value.trim();
         const loginType = document.querySelector('input[name="loginType"]:checked').value;
-        const rememberMe = document.getElementById('rememberMe') ? document.getElementById('rememberMe').checked : false;
 
         // Reset previous error messages
         document.getElementById('usernameError').textContent = '';
@@ -120,51 +119,19 @@ function setupLoginForm(loginForm) {
             loginSpinner.classList.remove('d-none');
         }
 
-        // Simulate authentication ()
+        // Simulate authentication with a small delay
         setTimeout(() => {
-            // Check if user exists in localStorage
-            const users = storage.get('users') || [];
-            let authenticatedUser = null;
-
-            if (loginType === 'admin') {
-                // Admin authentication (for demo, using hardcoded admin credentials)
-                if (username === 'admin' && password === 'Admin@123') {
-                    authenticatedUser = {
-                        id: 'admin-001',
-                        username: 'admin',
-                        role: 'admin',
-                        name: 'Admin User'
-                    };
-                }
-            } else {
-                // Customer authentication
-                authenticatedUser = users.find(user =>
-                    user.username === username && user.password === password
-                );
-
-                if (authenticatedUser) {
-                    authenticatedUser.role = 'customer';
-                }
-            }
-
             // Hide spinner
             if (loginSpinner) {
                 loginSpinner.classList.add('d-none');
             }
 
-            if (authenticatedUser) {
-                // Store user data in session/local storage based on remember me
-                const { password, ...userWithoutPassword } = authenticatedUser;
-                utils.auth.login(userWithoutPassword, rememberMe);
-
-                // Redirect based on user role
-                if (authenticatedUser.role === 'admin') {
-                    window.location.href = '../admin/admin-dashboard.html';
-                } else {
-                    window.location.href = '../user/user-dashboard.html';
-                }
+            // MODIFIED: Always proceed with login, bypassing actual authentication
+            // Redirect based on user role
+            if (loginType === 'admin') {
+                window.location.href = '../admin/admin-dashboard.html';
             } else {
-                document.getElementById('passwordError').textContent = 'Invalid username or password';
+                window.location.href = '../user/user-dashboard.html';
             }
         }, 1000); // Simulate network delay
     });
@@ -397,122 +364,12 @@ function setupRegistrationForm(registrationForm) {
         });
     }
 
+    // Handle form submission
     registrationForm.addEventListener('submit', function (e) {
         e.preventDefault();
 
-        // Get form values
-        const username = usernameField.value.trim();
-        const email = emailField.value.trim();
-        const password = passwordField.value.trim();
-        const confirmPassword = confirmPasswordField.value.trim();
-        const mobileNumber = mobileNumberField.value.trim();
-        const aadharNumber = aadharNumberField.value.trim();
-        const agreeTerms = document.getElementById('agreeTerms').checked;
-
-        // Reset previous error messages
-        const errorFields = ['username', 'email', 'password', 'confirmPassword', 'mobile', 'aadhar', 'terms'];
-        errorFields.forEach(field => {
-            const errorElement = document.getElementById(`${field}Error`);
-            if (errorElement) {
-                errorElement.textContent = '';
-            }
-        });
-
-        // Validate form using our validation utility
-        const formData = {
-            username,
-            email,
-            password,
-            confirmPassword,
-            mobileNumber,
-            aadharNumber
-        };
-
-        const validationResult = validation.validateForm(formData);
-
-        // If not valid, display errors
-        if (!validationResult.isValid) {
-            Object.keys(validationResult.errors).forEach(field => {
-                const errorFieldName = field.includes('Number') ? field.replace('Number', '') : field;
-                const errorElement = document.getElementById(`${errorFieldName}Error`);
-                if (errorElement) {
-                    errorElement.textContent = validationResult.errors[field];
-                }
-            });
-
-            // Check terms agreement
-            if (!agreeTerms) {
-                document.getElementById('termsError').textContent = 'You must agree to the terms and conditions';
-                return;
-            }
-
-            return;
-        }
-
-        // Validate terms agreement
-        if (!agreeTerms) {
-            document.getElementById('termsError').textContent = 'You must agree to the terms and conditions';
-            return;
-        }
-
-        // Show spinner
-        const registerSpinner = document.getElementById('registerSpinner');
-        if (registerSpinner) {
-            registerSpinner.classList.remove('d-none');
-        }
-
-        // Simulate registration process (in a real application, this would be an API call)
-        setTimeout(() => {
-            // Get existing users or initialize empty array
-            const users = storage.get('users') || [];
-
-            // Check if username already exists
-            const usernameExists = users.some(user => user.username === username);
-            if (usernameExists) {
-                document.getElementById('usernameError').textContent = 'Username already taken';
-                if (registerSpinner) {
-                    registerSpinner.classList.add('d-none');
-                }
-                return;
-            }
-
-            // Check if email already exists
-            const emailExists = users.some(user => user.email === email);
-            if (emailExists) {
-                document.getElementById('emailError').textContent = 'Email already registered';
-                if (registerSpinner) {
-                    registerSpinner.classList.add('d-none');
-                }
-                return;
-            }
-
-            // Create new user object
-            const newUser = {
-                id: utils.generateId('user-'),
-                username,
-                password, // In a real app, this would be hashed
-                email,
-                mobileNumber,
-                aadharNumber,
-                registrationDate: new Date().toISOString()
-            };
-
-            // Add user to storage
-            users.push(newUser);
-            storage.set('users', users);
-
-            // Hide spinner
-            if (registerSpinner) {
-                registerSpinner.classList.add('d-none');
-            }
-
-            // Show success modal
-            const successModal = new bootstrap.Modal(document.getElementById('registrationSuccessModal'));
-            successModal.show();
-
-            // Reset form
-            registrationForm.reset();
-        }, 1500); // Simulate network delay
+        // MODIFIED: Skip validation and storage, directly redirect to login
+        window.location.href = 'login.html?registered=true';
     });
 }
 

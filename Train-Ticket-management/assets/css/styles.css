@@ -155,16 +155,14 @@ body {
 }
 
 /* Cards */
-.feature-card,
-.news-card {
+.feature-card {
     transition: var(--transition-normal);
     border: none;
     box-shadow: var(--box-shadow);
     overflow: hidden;
 }
 
-.feature-card:hover,
-.news-card:hover {
+.feature-card:hover {
     transform: translateY(-5px);
     box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
 }
@@ -183,36 +181,6 @@ body {
 }
 
 .feature-card:hover .icon-box {
-    background-color: var(--primary-color);
-    color: white;
-    transform: scale(1.1);
-}
-
-.news-card img {
-    height: 200px;
-    object-fit: cover;
-    transition: var(--transition-normal);
-}
-
-.news-card:hover img {
-    transform: scale(1.05);
-}
-
-/* Achievement Section */
-.achievement-icon {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 60px;
-    height: 60px;
-    border-radius: 50%;
-    background-color: rgba(0, 86, 179, 0.1);
-    color: var(--primary-color);
-    font-size: 1.5rem;
-    transition: var(--transition-normal);
-}
-
-.achievement-item:hover .achievement-icon {
     background-color: var(--primary-color);
     color: white;
     transform: scale(1.1);
@@ -399,16 +367,18 @@ body {
 
 /* Tables */
 .table-container {
+    box-shadow: var(--box-shadow);
     border-radius: 10px;
     overflow: hidden;
-    box-shadow: var(--box-shadow);
+    margin-bottom: 2rem;
 }
 
 .table thead th {
-    background-color: var(--primary-color);
-    color: white;
-    font-weight: 500;
-    border: none;
+    background-color: #f8f9fa;
+    border-bottom: 2px solid #e9ecef;
+    font-weight: 600;
+    color: var(--primary-color);
+    padding: 12px 15px;
 }
 
 .table-hover tbody tr {
@@ -419,17 +389,27 @@ body {
     background-color: rgba(0, 86, 179, 0.05);
 }
 
-/* Action Buttons */
+/* Tickets table specific styles */
+#ticketsTableBody td {
+    padding: 10px 12px;
+    vertical-align: middle;
+}
+
+/* Button styles */
 .btn-action {
-    width: 32px;
-    height: 32px;
-    border-radius: 4px;
+    width: 36px;
+    height: 36px;
+    padding: 0;
+    border-radius: 50%;
+    transition: var(--transition-normal);
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    transition: var(--transition-normal);
+    margin-right: 0.25rem;
+    border: none;
 }
 
+/* Action Buttons */
 .btn-edit {
     color: #28a745;
     background-color: rgba(40, 167, 69, 0.1);
@@ -450,48 +430,14 @@ body {
     color: white;
 }
 
-/* Responsive Adjustments */
-@media (max-width: 992px) {
-    .hero-section {
-        padding: 60px 0;
-    }
-
-    .achievement-item {
-        margin-bottom: 1.5rem;
-    }
-
-    .nav-link::after {
-        display: none;
-    }
+.btn-info {
+    color: #0dcaf0;
+    background-color: rgba(13, 202, 240, 0.1);
 }
 
-@media (max-width: 768px) {
-    .hero-section {
-        padding: 40px 0;
-    }
-
-    .form-container {
-        padding: 1.5rem;
-    }
-
-    .hero-image-container {
-        transform: none;
-        margin-top: 2rem;
-    }
-
-    .section-title::after {
-        margin: 0.8rem auto;
-    }
-}
-
-@media (max-width: 576px) {
-    .hero-section {
-        padding: 30px 0;
-    }
-
-    .contact-item {
-        margin-bottom: 2rem;
-    }
+.btn-info:hover {
+    background-color: #0dcaf0;
+    color: white;
 }
 
 /* Animation Classes */
@@ -655,4 +601,63 @@ input[type="date"] {
 /* Chart containers */
 canvas {
     max-width: 100%;
+}
+
+/* Button styles for ticket actions */
+.view-ticket-btn,
+.cancel-ticket-btn {
+    width: 38px;
+    height: 38px;
+    padding: 0;
+    margin: 0 5px;
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.view-ticket-btn:hover,
+.cancel-ticket-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+.view-ticket-btn i,
+.cancel-ticket-btn i {
+    font-size: 1rem;
+}
+
+/* Action cell in the table */
+#ticketsTableBody td:last-child {
+    white-space: nowrap;
+    min-width: 110px;
+    text-align: center;
+}
+
+/* Make sure action buttons are properly aligned */
+.actions-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+/* Status badge styling */
+.badge {
+    padding: 0.4em 0.65em;
+    font-weight: 500;
+    border-radius: 4px;
+}
+
+/* Empty tickets message styling */
+.empty-tickets-message {
+    padding: 2rem 0;
+    animation: fadeIn 0.5s ease-out;
+}
+
+.empty-tickets-message i {
+    display: block;
+    margin: 0 auto;
+    color: rgba(0, 86, 179, 0.2);
 }

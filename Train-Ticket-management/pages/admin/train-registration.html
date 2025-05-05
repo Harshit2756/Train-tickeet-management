@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Train Registration - Indian Railways</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="../../assets/css/styles.css">
+    <style>
+        /* Custom styles for action buttons */
+        .btn-action {
+            width: 32px;
+            height: 32px;
+            padding: 0;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            margin-right: 5px;
+        }
+
+        /* Success modal styling */
+        .success-icon {
+            font-size: 4rem;
+            color: #28a745;
+            margin-bottom: 1rem;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary sticky-top">
+        <div class="container">
+            <a class="navbar-brand d-flex align-items-center" href="#">
+                <i class="bi bi-train-front me-2"></i>
+                <span>Indian Railways</span>
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="admin-dashboard.html">Home</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="admin-dashboard.html#customersSection">Customers</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" href="train-registration.html">Train Registration</a>
+                    </li>
+                </ul>
+                <div class="d-flex align-items-center">
+                    <!-- Profile dropdown -->
+                    <div class="dropdown me-3">
+                        <a class="btn btn-primary dropdown-toggle d-flex align-items-center" href="#" role="button"
+                            id="profileDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="bi bi-person-circle me-2"></i> <span id="adminNameDisplay">Admin</span>
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="profileDropdown">
+                            <li>
+                                <h6 class="dropdown-header">Account</h6>
+                            </li>
+                            <li><a class="dropdown-item" href="admin-profile.html">View Profile</a></li>
+                            <li>
+                                <hr class="dropdown-divider">
+                            </li>
+                            <li><a class="dropdown-item" href="#" id="logoutBtn">Logout</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main>
+        <!-- Alert Container -->
+        <div class="alert-container container mt-4"></div>
+
+        <!-- Train Registration Section -->
+        <section class="py-5">
+            <div class="container">
+                <div class="row justify-content-center">
+                    <div class="col-lg-10">
+                        <div class="card border-0 shadow-sm mb-5">
+                            <div class="card-header bg-white py-3">
+                                <h4 class="card-title mb-0" id="pageTitle">Register New Train</h4>
+                            </div>
+                            <div class="card-body p-4">
+                                <form id="trainForm">
+                                    <div class="row">
+                                        <div class="col-md-6 mb-4">
+                                            <label for="trainName" class="form-label">Name of train</label>
+                                            <input type="text" class="form-control form-control-lg" id="trainName"
+                                                required>
+                                        </div>
+                                        <div class="col-md-6 mb-4">
+                                            <label for="trainSeats" class="form-label">Number of seats</label>
+                                            <input type="number" class="form-control form-control-lg" id="trainSeats"
+                                                min="1" required>
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-md-6 mb-4">
+                                            <label for="trainFrom" class="form-label">From</label>
+                                            <select class="form-select form-select-lg" id="trainFrom" required>
+                                                <option value="" selected disabled>Select station</option>
+                                                <option value="Delhi">Delhi</option>
+                                                <option value="Mumbai">Mumbai</option>
+                                                <option value="Chennai">Chennai</option>
+                                                <option value="Kolkata">Kolkata</option>
+                                                <option value="Bangalore">Bangalore</option>
+                                                <option value="Hyderabad">Hyderabad</option>
+                                                <option value="Ahmedabad">Ahmedabad</option>
+                                                <option value="Pune">Pune</option>
+                                            </select>
+                                        </div>
+                                        <div class="col-md-6 mb-4">
+                                            <label for="trainTo" class="form-label">To</label>
+                                            <select class="form-select form-select-lg" id="trainTo" required>
+                                                <option value="" selected disabled>Select station</option>
+                                                <option value="Delhi">Delhi</option>
+                                                <option value="Mumbai">Mumbai</option>
+                                                <option value="Chennai">Chennai</option>
+                                                <option value="Kolkata">Kolkata</option>
+                                                <option value="Bangalore">Bangalore</option>
+                                                <option value="Hyderabad">Hyderabad</option>
+                                                <option value="Ahmedabad">Ahmedabad</option>
+                                                <option value="Pune">Pune</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="mb-4">
+                                        <label for="trainOwnership" class="form-label">Ownership of the train</label>
+                                        <select class="form-select form-select-lg" id="trainOwnership" required>
+                                            <option value="" selected disabled>Select ownership</option>
+                                            <option value="Indian Railways">Indian Railways</option>
+                                            <option value="IRCTC">IRCTC</option>
+                                            <option value="Private">Private Operator</option>
+                                            <option value="Joint Venture">Joint Venture</option>
+                                        </select>
+                                    </div>
+                                    <div class="d-grid gap-2 d-md-flex justify-content-md-end mt-4">
+                                        <a href="admin-dashboard.html"
+                                            class="btn btn-outline-secondary btn-lg me-md-2">Cancel</a>
+                                        <button type="submit" class="btn btn-primary btn-lg" id="submitBtn">Register
+                                            Train</button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+
+                        <!-- Train List Table -->
+                        <div class="card border-0 shadow-sm">
+                            <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+                                <h4 class="card-title mb-0">Registered Trains</h4>
+                            </div>
+                            <div class="card-body p-0">
+                                <div class="table-responsive">
+                                    <table class="table table-hover mb-0">
+                                        <thead class="table-light">
+                                            <tr>
+                                                <th>ID</th>
+                                                <th>Name</th>
+                                                <th>Seats</th>
+                                                <th>From</th>
+                                                <th>To</th>
+                                                <th>Ownership</th>
+                                                <th>Action</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="trainsTableBody">
+                                            <!-- Table will be populated with JS -->
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Success Modal -->
+    <div class="modal fade" id="successModal" tabindex="-1" aria-labelledby="successModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-body text-center p-5">
+                    <i class="bi bi-check-circle-fill success-icon"></i>
+                    <h3 class="mb-3" id="successTitle">Train Registered Successfully</h3>
+                    <p id="successMessage">Your train has been successfully registered in the system.</p>
+                    <button type="button" class="btn btn-primary btn-lg mt-3" data-bs-dismiss="modal">OK</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="bg-dark text-white py-4 mt-5">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-6 text-center text-md-start">
+                    <p class="mb-0">&copy; 2023 Indian Railways. All rights reserved.</p>
+                </div>
+                <div class="col-md-6 text-center text-md-end">
+                    <p class="mb-0"><small>Admin Panel | <a href="mailto:admin@indianrail.gov.in"
+                                class="text-white">admin@indianrail.gov.in</a></small></p>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="../../assets/js/utils/main.js"></script>
+    <script src="../../assets/js/utils/utils.js"></script>
+    <script src="../../assets/js/auth/auth.js"></script>
+    <script src="../../assets/js/admin/train-registration.js"></script>
+</body>
+
+</html>

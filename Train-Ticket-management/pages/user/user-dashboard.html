@@ -27,21 +27,31 @@
                         <a class="nav-link active" href="user-dashboard.html">Home</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="#" data-bs-toggle="modal" data-bs-target="#bookTicketModal">Book
+                        <a class="nav-link" href="book-ticket.html">Book
                             Ticket</a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link" href="#" id="viewTicketsLink">View Tickets</a>
                     </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="#" data-bs-toggle="modal" data-bs-target="#updateProfileModal">Update
-                            Profile</a>
-                    </li>
                 </ul>
                 <div class="d-flex align-items-center">
-                    <span class="text-white me-3"><i class="bi bi-person-circle me-1"></i> <span
-                            id="userNameDisplay">User</span></span>
-                    <button class="btn btn-outline-light" id="logoutBtn">Logout</button>
+                    <!-- Profile dropdown -->
+                    <div class="dropdown me-3">
+                        <a class="btn btn-primary dropdown-toggle d-flex align-items-center" href="#" role="button"
+                            id="profileDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="bi bi-person-circle me-2"></i> <span id="userNameDisplay">User</span>
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="profileDropdown">
+                            <li>
+                                <h6 class="dropdown-header">Account</h6>
+                            </li>
+                            <li><a class="dropdown-item" href="user-profile.html">View Profile</a></li>
+                            <li>
+                                <hr class="dropdown-divider">
+                            </li>
+                            <li><a class="dropdown-item" href="#" id="logoutBtn">Logout</a></li>
+                        </ul>
+                    </div>
                 </div>
             </div>
         </div>
@@ -120,12 +130,12 @@
                 <!-- Tickets Tables Section -->
                 <div class="row">
                     <div class="col-12 mb-4">
-                        <div class="card border-0 table-container">
+                        <div id="ticketsSection" class="card border-0 table-container">
                             <div class="card-header bg-white py-3">
                                 <div class="d-flex justify-content-between align-items-center">
                                     <h5 class="mb-0">Your Tickets</h5>
-                                    <button class="btn btn-primary btn-sm" data-bs-toggle="modal"
-                                        data-bs-target="#bookTicketModal">
+                                    <button class="btn btn-primary btn-sm"
+                                        onclick="window.location.href='book-ticket.html'">
                                         <i class="bi bi-plus-circle me-1"></i> Book New Ticket
                                     </button>
                                 </div>
@@ -136,18 +146,21 @@
                                         <thead>
                                             <tr>
                                                 <th>Ticket ID</th>
-                                                <th>Train</th>
-                                                <th>Route</th>
-                                                <th>Travel Date</th>
-                                                <th>Class</th>
-                                                <th>Passengers</th>
+                                                <th>Train ID</th>
+                                                <th>User ID</th>
+                                                <th>User Name</th>
+                                                <th>Boarding Station</th>
+                                                <th>Destination Station</th>
+                                                <th>Boarding Date and Time</th>
+                                                <th>Arrival Date and Time</th>
+                                                <th>Number of tickets</th>
                                                 <th>Status</th>
                                                 <th>Actions</th>
                                             </tr>
                                         </thead>
                                         <tbody id="ticketsTableBody">
                                             <tr>
-                                                <td colspan="8" class="text-center py-4">No tickets found. Book your
+                                                <td colspan="11" class="text-center py-4">No tickets found. Book your
                                                     first journey!</td>
                                             </tr>
                                         </tbody>
@@ -158,7 +171,7 @@
                     </div>
                 </div>
 
-                <!-- Sales Per Quarter -->
+                <!-- Statistics Tables -->
                 <div class="row">
                     <div class="col-md-6 mb-4">
                         <div class="card border-0">
@@ -166,7 +179,42 @@
                                 <h5 class="mb-0">Tickets Per Class</h5>
                             </div>
                             <div class="card-body">
-                                <canvas id="ticketsPerClassChart" height="300"></canvas>
+                                <div class="table-responsive">
+                                    <table class="table table-hover">
+                                        <thead>
+                                            <tr>
+                                                <th>Class Type</th>
+                                                <th>Number of Tickets</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="ticketsPerClassTableBody">
+                                            <tr>
+                                                <td>First Class</td>
+                                                <td>1</td>
+                                            </tr>
+                                            <tr>
+                                                <td>AC Tier 1</td>
+                                                <td>1</td>
+                                            </tr>
+                                            <tr>
+                                                <td>AC Tier 2</td>
+                                                <td>0</td>
+                                            </tr>
+                                            <tr>
+                                                <td>AC Tier 3</td>
+                                                <td>0</td>
+                                            </tr>
+                                            <tr>
+                                                <td>Sleeper</td>
+                                                <td>0</td>
+                                            </tr>
+                                            <tr>
+                                                <td>General</td>
+                                                <td>0</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -176,7 +224,34 @@
                                 <h5 class="mb-0">Sales Per Quarter</h5>
                             </div>
                             <div class="card-body">
-                                <canvas id="salesPerQuarterChart" height="300"></canvas>
+                                <div class="table-responsive">
+                                    <table class="table table-hover">
+                                        <thead>
+                                            <tr>
+                                                <th>Quarter</th>
+                                                <th>Amount (₹)</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="salesPerQuarterTableBody">
+                                            <tr>
+                                                <td>Q1</td>
+                                                <td>₹1,800</td>
+                                            </tr>
+                                            <tr>
+                                                <td>Q2</td>
+                                                <td>₹3,200</td>
+                                            </tr>
+                                            <tr>
+                                                <td>Q3</td>
+                                                <td>₹0</td>
+                                            </tr>
+                                            <tr>
+                                                <td>Q4</td>
+                                                <td>₹0</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -185,200 +260,133 @@
         </section>
     </main>
 
-    <!-- Book Ticket Modal -->
-    <div class="modal fade" id="bookTicketModal" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog modal-lg modal-dialog-centered">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">Book a Ticket</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <form id="bookTicketForm">
-                        <div class="row g-3">
-                            <!-- Hidden User ID field -->
-                            <input type="hidden" id="userId" name="userId">
-
-                            <!-- Name field -->
-                            <div class="col-md-6">
-                                <label for="passengerName" class="form-label">Passenger Name</label>
-                                <input type="text" class="form-control" id="passengerName" pattern="^[a-zA-Z ]{3,50}$"
-                                    title="Name should contain at least 3 characters and no numbers or special characters"
-                                    required>
-                            </div>
-
-                            <!-- Mobile field -->
-                            <div class="col-md-6">
-                                <label for="passengerMobile" class="form-label">Mobile Number</label>
-                                <input type="tel" class="form-control" id="passengerMobile" pattern="^[0-9]{10}$"
-                                    title="Mobile number must be 10 digits" required>
-                            </div>
-
-                            <!-- Age field -->
-                            <div class="col-md-4">
-                                <label for="passengerAge" class="form-label">Age</label>
-                                <input type="number" class="form-control" id="passengerAge" min="1" max="120"
-                                    title="Age must be between 1 and 120" required>
-                            </div>
-
-                            <!-- Travel Date field -->
-                            <div class="col-md-4">
-                                <label for="travelDate" class="form-label">Travel Date</label>
-                                <input type="date" class="form-control" id="travelDate" required>
-                            </div>
-
-                            <!-- Number of Tickets field -->
-                            <div class="col-md-4">
-                                <label for="numTickets" class="form-label">Number of Tickets</label>
-                                <input type="number" class="form-control" id="numTickets" min="1" max="6" value="1"
-                                    title="You can book 1-6 tickets at a time" required>
-                            </div>
-
-                            <!-- Boarding Station field -->
-                            <div class="col-md-6">
-                                <label for="boardingStation" class="form-label">Boarding Station</label>
-                                <select class="form-select" id="boardingStation" required>
-                                    <option value="" selected disabled>Select station</option>
-                                    <option value="Delhi">Delhi</option>
-                                    <option value="Mumbai">Mumbai</option>
-                                    <option value="Chennai">Chennai</option>
-                                    <option value="Kolkata">Kolkata</option>
-                                    <option value="Bangalore">Bangalore</option>
-                                    <option value="Hyderabad">Hyderabad</option>
-                                    <option value="Ahmedabad">Ahmedabad</option>
-                                    <option value="Pune">Pune</option>
-                                </select>
-                            </div>
-
-                            <!-- Destination Station field -->
-                            <div class="col-md-6">
-                                <label for="destinationStation" class="form-label">Destination Station</label>
-                                <select class="form-select" id="destinationStation" required>
-                                    <option value="" selected disabled>Select station</option>
-                                    <option value="Delhi">Delhi</option>
-                                    <option value="Mumbai">Mumbai</option>
-                                    <option value="Chennai">Chennai</option>
-                                    <option value="Kolkata">Kolkata</option>
-                                    <option value="Bangalore">Bangalore</option>
-                                    <option value="Hyderabad">Hyderabad</option>
-                                    <option value="Ahmedabad">Ahmedabad</option>
-                                    <option value="Pune">Pune</option>
-                                </select>
-                            </div>
-
-                            <!-- Ticket Category field -->
-                            <div class="col-md-6">
-                                <label for="ticketCategory" class="form-label">Ticket Category</label>
-                                <select class="form-select" id="ticketCategory" required>
-                                    <option value="" selected disabled>Select category</option>
-                                    <option value="First Class">First Class</option>
-                                    <option value="AC Tier 1">AC Tier 1</option>
-                                    <option value="AC Tier 2">AC Tier 2</option>
-                                    <option value="AC Tier 3">AC Tier 3</option>
-                                    <option value="Sleeper">Sleeper</option>
-                                    <option value="General">General</option>
-                                    <option value="Tatkal">Tatkal</option>
-                                </select>
-                            </div>
-
-                            <!-- Train Selection field -->
-                            <div class="col-md-6">
-                                <label for="trainSelect" class="form-label">Select Train</label>
-                                <select class="form-select" id="trainSelect" required disabled>
-                                    <option value="" selected>Select boarding & destination first</option>
-                                </select>
-                            </div>
-
-                            <div class="col-12 mt-4">
-                                <button type="submit" class="btn btn-primary w-100">
-                                    <span id="bookingSpinner"
-                                        class="spinner-border spinner-border-sm me-2 d-none"></span>
-                                    Book Ticket
-                                </button>
-                            </div>
-                        </div>
-                    </form>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Update Profile Modal -->
-    <div class="modal fade" id="updateProfileModal" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">Update Profile</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <form id="updateProfileForm">
-                        <div class="mb-3">
-                            <label for="updateEmail" class="form-label">Email</label>
-                            <input type="email" class="form-control" id="updateEmail"
-                                pattern="^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$"
-                                title="Please enter a valid email address" required>
-                        </div>
-                        <div class="mb-3">
-                            <label for="updateMobile" class="form-label">Mobile Number</label>
-                            <input type="tel" class="form-control" id="updateMobile" pattern="^[0-9]{10}$"
-                                title="Mobile number must be 10 digits" required>
-                        </div>
-                        <div class="mb-3">
-                            <label for="updateAddress" class="form-label">Address</label>
-                            <textarea class="form-control" id="updateAddress" rows="3"></textarea>
-                        </div>
-
-                        <div class="form-check mb-3">
-                            <input class="form-check-input" type="checkbox" id="updatePasswordCheck">
-                            <label class="form-check-label" for="updatePasswordCheck">
-                                Update Password
-                            </label>
-                        </div>
-
-                        <div id="passwordUpdateFields" class="d-none">
-                            <div class="mb-3">
-                                <label for="currentPassword" class="form-label">Current Password</label>
-                                <input type="password" class="form-control" id="currentPassword">
-                            </div>
-                            <div class="mb-3">
-                                <label for="newPassword" class="form-label">New Password</label>
-                                <input type="password" class="form-control" id="newPassword"
-                                    pattern="^(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#$%^&*()_+\-=\[\]{};':\" \\|,.<>\/?]).{8,}$"
-                                title="Password must be at least 8 characters with at least 1 uppercase letter, 1
-                                number, and 1 special character">
-                                <div class="form-text">Must be at least 8 characters with at least 1 number, 1
-                                    uppercase, and 1 special character.</div>
-                            </div>
-                            <div class="mb-3">
-                                <label for="confirmNewPassword" class="form-label">Confirm New Password</label>
-                                <input type="password" class="form-control" id="confirmNewPassword">
-                            </div>
-                        </div>
-
-                        <button type="submit" class="btn btn-primary w-100">Update Profile</button>
-                    </form>
-                </div>
-            </div>
-        </div>
-    </div>
-
     <!-- Ticket Details Modal -->
     <div class="modal fade" id="ticketDetailsModal" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-lg modal-dialog-centered">
             <div class="modal-content">
-                <div class="modal-header">
+                <div class="modal-header bg-primary text-white">
                     <h5 class="modal-title">Ticket Details</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
+                        aria-label="Close"></button>
                 </div>
                 <div class="modal-body" id="ticketDetailsContent">
-                    <!-- Content will be dynamically populated -->
+                    <div class="ticket-container p-3">
+                        <div class="row mb-4">
+                            <div class="col-12 text-center">
+                                <h4 class="text-primary mb-0" id="modalTrainName">Train Name (Train Number)</h4>
+                                <p class="mb-1" id="modalJourneyDetails">Source to Destination</p>
+                                <div class="badge bg-success mb-3" id="modalStatus">Confirmed</div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="card mb-3">
+                                    <div class="card-header bg-light">
+                                        <h6 class="mb-0">Journey Details</h6>
+                                    </div>
+                                    <div class="card-body">
+                                        <table class="table table-borderless table-sm">
+                                            <tr>
+                                                <th>Train ID:</th>
+                                                <td id="modalTrainId">-</td>
+                                            </tr>
+                                            <tr>
+                                                <th>Boarding Station:</th>
+                                                <td id="modalBoardingStation">-</td>
+                                            </tr>
+                                            <tr>
+                                                <th>Destination Station:</th>
+                                                <td id="modalDestinationStation">-</td>
+                                            </tr>
+                                            <tr>
+                                                <th>Journey Date:</th>
+                                                <td id="modalJourneyDate">-</td>
+                                            </tr>
+                                            <tr>
+                                                <th>Departure Time:</th>
+                                                <td id="modalDepartureTime">-</td>
+                                            </tr>
+                                            <tr>
+                                                <th>Arrival Time:</th>
+                                                <td id="modalArrivalTime">-</td>
+                                            </tr>
+                                            <tr>
+                                                <th>Class:</th>
+                                                <td id="modalClass">-</td>
+                                            </tr>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="col-md-6">
+                                <div class="card mb-3">
+                                    <div class="card-header bg-light">
+                                        <h6 class="mb-0">Passenger Details</h6>
+                                    </div>
+                                    <div class="card-body">
+                                        <table class="table table-borderless table-sm">
+                                            <tr>
+                                                <th>User ID:</th>
+                                                <td id="modalUserId">-</td>
+                                            </tr>
+                                            <tr>
+                                                <th>Passenger Name:</th>
+                                                <td id="modalPassengerName">-</td>
+                                            </tr>
+                                            <tr>
+                                                <th>Age/Gender:</th>
+                                                <td id="modalPassengerDetails">-</td>
+                                            </tr>
+                                            <tr>
+                                                <th>Number of Tickets:</th>
+                                                <td id="modalPassengerCount">-</td>
+                                            </tr>
+                                            <tr>
+                                                <th>Fare:</th>
+                                                <td id="modalFare">-</td>
+                                            </tr>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-12">
+                                <div class="card">
+                                    <div class="card-header bg-light">
+                                        <h6 class="mb-0">Booking Details</h6>
+                                    </div>
+                                    <div class="card-body">
+                                        <table class="table table-borderless table-sm">
+                                            <tr>
+                                                <th width="200">Booking ID:</th>
+                                                <td id="modalBookingId">-</td>
+                                            </tr>
+                                            <tr>
+                                                <th>Booking Date:</th>
+                                                <td id="modalBookingDate">-</td>
+                                            </tr>
+                                            <tr>
+                                                <th>Status:</th>
+                                                <td><span id="modalStatusDetail"
+                                                        class="badge bg-success">Confirmed</span></td>
+                                            </tr>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
                     <button type="button" class="btn btn-primary" id="printTicketBtn">
                         <i class="bi bi-printer me-1"></i> Print Ticket
                     </button>
+                    <div id="cancelButtonContainer"></div>
                 </div>
             </div>
         </div>
@@ -425,9 +433,10 @@
 
     <!-- Scripts -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="../../assets/js/utils/main.js"></script>
+    <script src="../../assets/js/utils/utils.js"></script>
     <script src="../../assets/js/auth/auth.js"></script>
+    <script src="../../assets/js/user/user-validation.js"></script>
     <script src="../../assets/js/user/user-dashboard.js"></script>
 </body>
 
