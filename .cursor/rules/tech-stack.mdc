@@ -1,0 +1,9 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+# tech-stack
+
+- Only use HTML, CSS, Bootstrap, and JavaScript.
+- Follow standard practices for each technology.
